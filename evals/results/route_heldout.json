@@ -1,0 +1,404 @@
+{
+  "rows": [
+    {
+      "task": "Where is the Stripe webhook signature verified? Just point me to the file and function, don't change anything.",
+      "ok": true,
+      "ladder": "read",
+      "got": "scout",
+      "got_tier": "scout",
+      "effort": "low",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Bump the default HTTP client timeout in config/defaults.yaml from 10s to 30s.",
+      "ok": true,
+      "ladder": "write",
+      "got": "builder",
+      "got_tier": "builder",
+      "effort": "medium",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "The checkout integration test fails about 1 in 10 runs on CI but never locally. Figure out why and fix it.",
+      "ok": true,
+      "ladder": "write",
+      "got": "debugger",
+      "got_tier": "debugger",
+      "effort": "xhigh",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Walk me through how a request gets authenticated end to end in the API gateway: middleware, token refresh, session store. Explanation only, no code changes.",
+      "ok": true,
+      "ladder": "read",
+      "got": "analyst",
+      "got_tier": "analyst",
+      "effort": "high",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Rename the Customer model to Account everywhere in the Django app: models, serializers, views, templates, admin, and tests. It's purely mechanical, no behavior change.",
+      "ok": false,
+      "ladder": "write",
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "effort": "high",
+      "tier_ok": false,
+      "read_given_write": false
+    },
+    {
+      "task": "What version of React Native is the mobile app pinned to?",
+      "ok": true,
+      "ladder": "read",
+      "got": "scout",
+      "got_tier": "scout",
+      "effort": "low",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Rotate the AWS access key that got committed to the repo last week, scrub it from the codebase, and move the service over to reading credentials from Vault.",
+      "ok": true,
+      "ladder": "write",
+      "got": "architect",
+      "got_tier": "architect",
+      "effort": "max",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Fix the typo 'recieve' in the error message in src/notifications/email.ts.",
+      "ok": true,
+      "ladder": "write",
+      "got": "builder",
+      "got_tier": "builder",
+      "effort": "medium",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Do the same thing you did for the orders service, but for inventory.",
+      "ok": true,
+      "ladder": "any",
+      "got": "main",
+      "got_tier": "debugger",
+      "effort": "xhigh",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Explain how the ECS tick loop in our game engine schedules systems and why physics runs before AI. I want a written explanation referencing the relevant files.",
+      "ok": true,
+      "ladder": "read",
+      "got": "analyst",
+      "got_tier": "analyst",
+      "effort": "high",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Users on Android 14 occasionally get a blank screen after coming back from the camera intent. No crash logs. Find the cause and fix it.",
+      "ok": true,
+      "ladder": "write",
+      "got": "debugger",
+      "got_tier": "debugger",
+      "effort": "xhigh",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Add a --json flag to the status subcommand in cmd/status.go that prints the same fields as JSON.",
+      "ok": true,
+      "ladder": "write",
+      "got": "builder",
+      "got_tier": "builder",
+      "effort": "medium",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "List every place in the CLI that calls os.Exit directly.",
+      "ok": true,
+      "ladder": "read",
+      "got": "scout",
+      "got_tier": "scout",
+      "effort": "low",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Replace our hand-rolled logger with structlog across the ingestion package. The config is already agreed in ADR-014; apply it to every module and update the tests.",
+      "ok": true,
+      "ladder": "write",
+      "got": "engineer",
+      "got_tier": "engineer",
+      "effort": "high",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Audit the entire monorepo, all 30 services, for SQL injection and unsafe deserialization and fix whatever you find.",
+      "ok": true,
+      "ladder": "orchestrate",
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "effort": "max",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "hey quick one - for the new in-app notifications, should we just poll every 30s or is it worth doing websockets? pick whatever makes sense for us and wire it up",
+      "ok": false,
+      "ladder": "write",
+      "got": "main",
+      "got_tier": "architect",
+      "effort": "max",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Trace how an event on the raw_events Kafka topic ends up in the warehouse fct_sessions table, and map every transformation step across the Spark jobs.",
+      "ok": false,
+      "ladder": "read",
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "effort": "high",
+      "tier_ok": false,
+      "read_given_write": false
+    },
+    {
+      "task": "The PlayerHealth script in the Unity project should clamp health to 0..maxHealth. Add that clamp in TakeDamage and Heal.",
+      "ok": true,
+      "ladder": "write",
+      "got": "builder",
+      "got_tier": "builder",
+      "effort": "medium",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "The nightly revenue rollup is off by a few cents versus the ledger on some days but not others. Track down the discrepancy and fix it.",
+      "ok": false,
+      "ladder": "write",
+      "got": "architect",
+      "got_tier": "architect",
+      "effort": "max",
+      "tier_ok": false,
+      "read_given_write": false
+    },
+    {
+      "task": "Add a region field to the Order proto and thread it through the gRPC server, the Go client library, and the React admin orders table.",
+      "ok": false,
+      "ladder": "write",
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "effort": "high",
+      "tier_ok": false,
+      "read_given_write": false
+    },
+    {
+      "task": "Which Terraform module defines the prod RDS instance?",
+      "ok": true,
+      "ladder": "read",
+      "got": "scout",
+      "got_tier": "scout",
+      "effort": "low",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Write the migration that splits users.name into first_name and last_name on the production Postgres database (about 40M rows) with no downtime.",
+      "ok": true,
+      "ladder": "write",
+      "got": "architect",
+      "got_tier": "architect",
+      "effort": "max",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Compare how the iOS and Android apps each handle offline caching and summarize the differences for me. Don't touch the code.",
+      "ok": true,
+      "ladder": "read",
+      "got": "analyst",
+      "got_tier": "analyst",
+      "effort": "high",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Add a unit test for the parse_date helper in utils/dates.py that covers the empty-string case.",
+      "ok": true,
+      "ladder": "write",
+      "got": "builder",
+      "got_tier": "builder",
+      "effort": "medium",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Our Go queue worker's memory creeps up until it gets OOM-killed after roughly two days. Find the leak and patch it.",
+      "ok": true,
+      "ladder": "write",
+      "got": "debugger",
+      "got_tier": "debugger",
+      "effort": "xhigh",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Move the mobile app's feature-flag reads from the old FlagService to the new RemoteConfig wrapper. The wrapper already exists; migrate the dozen or so call sites across the screens and update their tests.",
+      "ok": true,
+      "ladder": "write",
+      "got": "engineer",
+      "got_tier": "engineer",
+      "effort": "high",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "That approach from earlier didn't pan out. Try the other option we talked about.",
+      "ok": true,
+      "ladder": "any",
+      "got": "main",
+      "got_tier": "debugger",
+      "effort": "xhigh",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Find where the jump height constant for the player is defined in the platformer.",
+      "ok": true,
+      "ladder": "read",
+      "got": "scout",
+      "got_tier": "scout",
+      "effort": "low",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Replace session-cookie auth with OAuth2 + PKCE for the iOS and Android clients, including token storage and refresh.",
+      "ok": false,
+      "ladder": "write",
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "effort": "max",
+      "tier_ok": false,
+      "read_given_write": false
+    },
+    {
+      "task": "Why does the billing service's Helm chart look so different from every other service's? Dig through the templates, values files, and git history and explain it.",
+      "ok": true,
+      "ladder": "read",
+      "got": "analyst",
+      "got_tier": "analyst",
+      "effort": "high",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Enemies sometimes clip through walls when the game runs at high frame rates. Figure out what's going on in the collision code and fix it.",
+      "ok": true,
+      "ladder": "write",
+      "got": "debugger",
+      "got_tier": "debugger",
+      "effort": "xhigh",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Change the Android app's splash screen background to #0F172A in the theme XML.",
+      "ok": true,
+      "ladder": "write",
+      "got": "builder",
+      "got_tier": "builder",
+      "effort": "medium",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Add limit/offset pagination to the /projects, /users, and /invoices list endpoints and the frontend tables that consume them, following the same pattern /teams already uses.",
+      "ok": true,
+      "ladder": "write",
+      "got": "engineer",
+      "got_tier": "engineer",
+      "effort": "high",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Does the nightly_orders Airflow DAG use KubernetesPodOperator anywhere? Yes or no, with the line if so.",
+      "ok": true,
+      "ladder": "read",
+      "got": "scout",
+      "got_tier": "scout",
+      "effort": "low",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Migrate all 18 Python service repos from 3.8 to 3.12, including Dockerfiles, CI pipelines, and dependency upgrades.",
+      "ok": true,
+      "ladder": "orchestrate",
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "effort": "high",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Add idempotency keys to the refund endpoint so a double-click or client retry can never issue two refunds.",
+      "ok": true,
+      "ladder": "write",
+      "got": "architect",
+      "got_tier": "architect",
+      "effort": "max",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "The CLI hangs forever when stdin is a pipe but works fine in a terminal. No idea why. Investigate and fix.",
+      "ok": true,
+      "ladder": "write",
+      "got": "debugger",
+      "got_tier": "debugger",
+      "effort": "xhigh",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Give me an overview of how our CLI's plugin system works: how plugins are discovered, loaded, versioned, and sandboxed.",
+      "ok": true,
+      "ladder": "read",
+      "got": "analyst",
+      "got_tier": "analyst",
+      "effort": "high",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Add a /healthz endpoint to the Flask app that returns 200 with {\"ok\": true}.",
+      "ok": true,
+      "ladder": "write",
+      "got": "builder",
+      "got_tier": "builder",
+      "effort": "medium",
+      "tier_ok": true,
+      "read_given_write": false
+    },
+    {
+      "task": "Split the 2,000-line game_state.rs into separate inventory, quests, and combat modules, keeping the public API identical so nothing downstream changes.",
+      "ok": true,
+      "ladder": "write",
+      "got": "engineer",
+      "got_tier": "engineer",
+      "effort": "high",
+      "tier_ok": true,
+      "read_given_write": false
+    }
+  ]
+}

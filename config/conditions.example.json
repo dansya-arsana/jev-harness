@@ -1,0 +1,27 @@
+[
+  {
+    "id": "media-tools",
+    "threshold": 0.6,
+    "when": "Does `user_request` ask for AI-generated or AI-edited media: sound (music, sound effects, voice or text-to-speech) or images, video, or 3D assets?",
+    "yes": "It asks to create or edit media with a generative AI tool.",
+    "no": "No generative media: ordinary code, charts drawn by code, UI work, shaders written in code, or discussing existing assets.",
+    "inject": "Media tools: use <your audio tool> for all sound (music, SFX, voice) and <your visual tool> for images, video and 3D."
+  },
+  {
+    "id": "staging-deploy",
+    "threshold": 0.6,
+    "when": "Does `user_request` involve deploying to, updating, or debugging the staging server?",
+    "yes": "It is about deploying or operating staging.",
+    "no": "It is not about staging deploys.",
+    "file": "~/notes/staging-runbook.md"
+  },
+  {
+    "id": "my-app",
+    "threshold": 0.6,
+    "cwd_prefix": "~/code/my-app",
+    "when": "Is `user_request` about the My App project?",
+    "yes": "It is about My App.",
+    "no": "It is not about My App.",
+    "inject": "My App: run `make test` before committing; never edit generated files in gen/."
+  }
+]

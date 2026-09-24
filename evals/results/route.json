@@ -1,0 +1,799 @@
+{
+  "summary": {
+    "cases": 30,
+    "tier_acceptable": "27/30",
+    "accuracy": 0.9,
+    "tier_choice_acceptable": "29/30",
+    "kept_in_main": 4,
+    "read_tasks_given_edit_tools": "0/8",
+    "ladder_violations": 0,
+    "errors": 0,
+    "latency_ms": {
+      "p50": 1160,
+      "p95": 1227
+    },
+    "misses": [
+      {
+        "task": "Write unit tests for the invoice total calculation module",
+        "want": null,
+        "acceptable": [
+          "builder",
+          "engineer"
+        ],
+        "got": "debugger",
+        "effort": "xhigh"
+      },
+      {
+        "task": "Design the plugin system: choose between a registry and entry points and define ",
+        "want": null,
+        "acceptable": [
+          "architect"
+        ],
+        "got": "main",
+        "effort": "max"
+      },
+      {
+        "task": "Design the caching layer: pick between Redis and an in-process LRU and define th",
+        "want": null,
+        "acceptable": [
+          "architect"
+        ],
+        "got": "main",
+        "effort": "max"
+      }
+    ]
+  },
+  "rows": [
+    {
+      "task": "Find where the login route is defined and list the files it imports",
+      "ok": true,
+      "ladder": "read",
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1122,
+      "depth": 0.06,
+      "breadth": 1.12,
+      "signals": {
+        "self_contained": 0.79,
+        "read_only": 0.96,
+        "high_stakes": 0.71,
+        "unknown_cause": 0.29,
+        "design": 0.04
+      },
+      "reasons": []
+    },
+    {
+      "task": "Which files import the date formatting helper?",
+      "ok": true,
+      "ladder": "read",
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1110,
+      "depth": 0.02,
+      "breadth": 2.61,
+      "signals": {
+        "self_contained": 0.75,
+        "read_only": 0.96,
+        "high_stakes": 0.04,
+        "unknown_cause": 0.26,
+        "design": 0.04
+      },
+      "reasons": [
+        "broad but mechanical -> one scout, batch the work instead of orchestrating"
+      ]
+    },
+    {
+      "task": "List every TODO comment across the whole monorepo",
+      "ok": true,
+      "ladder": "read",
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1114,
+      "depth": 0.0,
+      "breadth": 3.0,
+      "signals": {
+        "self_contained": 0.91,
+        "read_only": 0.97,
+        "high_stakes": 0.05,
+        "unknown_cause": 0.06,
+        "design": 0.07
+      },
+      "reasons": [
+        "broad but mechanical -> one scout, batch the work instead of orchestrating"
+      ]
+    },
+    {
+      "task": "What version of React does the web package use?",
+      "ok": true,
+      "ladder": "read",
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1209,
+      "depth": 0.02,
+      "breadth": 0.24,
+      "signals": {
+        "self_contained": 0.81,
+        "read_only": 0.94,
+        "high_stakes": 0.03,
+        "unknown_cause": 0.2,
+        "design": 0.03
+      },
+      "reasons": []
+    },
+    {
+      "task": "Explain end to end how authentication and session refresh work across the backend and the mobile app",
+      "ok": true,
+      "ladder": "read",
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "via": "workflow",
+      "effort": "high",
+      "ladder_got": "orchestrate",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1182,
+      "depth": 2.67,
+      "breadth": 2.72,
+      "signals": {
+        "self_contained": 0.51,
+        "read_only": 0.92,
+        "high_stakes": 0.96,
+        "unknown_cause": 0.04,
+        "design": 0.38
+      },
+      "reasons": [
+        "read-only, deeper than a lookup -> analyst",
+        "breadth 2.72 >= 2.5 -> too broad for one context, orchestrate with Workflow"
+      ]
+    },
+    {
+      "task": "Explain how the payment webhook handler validates signatures and updates orders",
+      "ok": true,
+      "ladder": "read",
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1175,
+      "depth": 2.27,
+      "breadth": 1.49,
+      "signals": {
+        "self_contained": 0.62,
+        "read_only": 0.83,
+        "high_stakes": 0.96,
+        "unknown_cause": 0.06,
+        "design": 0.1
+      },
+      "reasons": [
+        "read-only, deeper than a lookup -> analyst"
+      ]
+    },
+    {
+      "task": "Investigate why builds are slow across all packages in the monorepo and report findings, no changes",
+      "ok": true,
+      "ladder": "read",
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "via": "workflow",
+      "effort": "high",
+      "ladder_got": "orchestrate",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1163,
+      "depth": 2.99,
+      "breadth": 2.99,
+      "signals": {
+        "self_contained": 0.8,
+        "read_only": 0.89,
+        "high_stakes": 0.06,
+        "unknown_cause": 0.97,
+        "design": 0.18
+      },
+      "reasons": [
+        "read-only, deeper than a lookup -> analyst",
+        "breadth 2.99 >= 2.5 -> too broad for one context, orchestrate with Workflow"
+      ]
+    },
+    {
+      "task": "Review the diff on this branch for correctness bugs and report them without editing",
+      "ok": true,
+      "ladder": "read",
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1101,
+      "depth": 2.82,
+      "breadth": 1.23,
+      "signals": {
+        "self_contained": 0.72,
+        "read_only": 0.93,
+        "high_stakes": 0.23,
+        "unknown_cause": 0.82,
+        "design": 0.04
+      },
+      "reasons": [
+        "read-only, deeper than a lookup -> analyst"
+      ]
+    },
+    {
+      "task": "Rename the variable usr to user in src/profile.py",
+      "ok": true,
+      "ladder": "write",
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1177,
+      "depth": 0.05,
+      "breadth": 0.02,
+      "signals": {
+        "self_contained": 0.92,
+        "read_only": 0.04,
+        "high_stakes": 0.07,
+        "unknown_cause": 0.02,
+        "design": 0.02
+      },
+      "reasons": []
+    },
+    {
+      "task": "Fix the typo 'recieve' in the README",
+      "ok": true,
+      "ladder": "write",
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1152,
+      "depth": 0.23,
+      "breadth": 0.0,
+      "signals": {
+        "self_contained": 0.91,
+        "read_only": 0.08,
+        "high_stakes": 0.01,
+        "unknown_cause": 0.03,
+        "design": 0.02
+      },
+      "reasons": []
+    },
+    {
+      "task": "Bump the axios dependency to 1.7.4 in package.json",
+      "ok": true,
+      "ladder": "write",
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1181,
+      "depth": 0.01,
+      "breadth": 0.01,
+      "signals": {
+        "self_contained": 0.94,
+        "read_only": 0.03,
+        "high_stakes": 0.34,
+        "unknown_cause": 0.02,
+        "design": 0.03
+      },
+      "reasons": []
+    },
+    {
+      "task": "Add a --verbose flag to the CLI in cli.py that prints each processed file",
+      "ok": true,
+      "ladder": "write",
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1155,
+      "depth": 1.0,
+      "breadth": 0.07,
+      "signals": {
+        "self_contained": 0.85,
+        "read_only": 0.04,
+        "high_stakes": 0.04,
+        "unknown_cause": 0.02,
+        "design": 0.11
+      },
+      "reasons": []
+    },
+    {
+      "task": "Replace the string colour with color in every file of the repository",
+      "ok": true,
+      "ladder": "write",
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1148,
+      "depth": 0.14,
+      "breadth": 2.99,
+      "signals": {
+        "self_contained": 0.91,
+        "read_only": 0.03,
+        "high_stakes": 0.05,
+        "unknown_cause": 0.02,
+        "design": 0.1
+      },
+      "reasons": [
+        "broad but mechanical -> one builder, batch the work instead of orchestrating"
+      ]
+    },
+    {
+      "task": "Add pagination to the three list endpoints in api/ and update their tests",
+      "ok": true,
+      "ladder": "write",
+      "got": "engineer",
+      "got_tier": "engineer",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1185,
+      "depth": 2.01,
+      "breadth": 1.71,
+      "signals": {
+        "self_contained": 0.63,
+        "read_only": 0.02,
+        "high_stakes": 0.11,
+        "unknown_cause": 0.03,
+        "design": 0.53
+      },
+      "reasons": [
+        "multi-part edit -> engineer"
+      ]
+    },
+    {
+      "task": "Extract the duplicated retry logic in the three HTTP clients into one shared helper and update callers",
+      "ok": true,
+      "ladder": "write",
+      "got": "engineer",
+      "got_tier": "engineer",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1097,
+      "depth": 2.01,
+      "breadth": 1.37,
+      "signals": {
+        "self_contained": 0.64,
+        "read_only": 0.04,
+        "high_stakes": 0.18,
+        "unknown_cause": 0.03,
+        "design": 0.29
+      },
+      "reasons": [
+        "multi-part edit -> engineer"
+      ]
+    },
+    {
+      "task": "Add dark mode support to the settings screen and persist the choice",
+      "ok": true,
+      "ladder": "write",
+      "got": "engineer",
+      "got_tier": "engineer",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1109,
+      "depth": 1.98,
+      "breadth": 1.18,
+      "signals": {
+        "self_contained": 0.7,
+        "read_only": 0.03,
+        "high_stakes": 0.06,
+        "unknown_cause": 0.03,
+        "design": 0.67
+      },
+      "reasons": [
+        "multi-part edit -> engineer"
+      ]
+    },
+    {
+      "task": "Write unit tests for the invoice total calculation module",
+      "ok": false,
+      "ladder": "write",
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": false,
+      "ladder_ok": true,
+      "ms": 1222,
+      "depth": 1.56,
+      "breadth": 1.45,
+      "signals": {
+        "self_contained": 0.63,
+        "read_only": 0.08,
+        "high_stakes": 0.27,
+        "unknown_cause": 0.03,
+        "design": 0.15
+      },
+      "reasons": [
+        "multi-part edit -> engineer",
+        "low confidence on depth -> engineer escalated to debugger"
+      ]
+    },
+    {
+      "task": "Checkout intermittently double-charges customers under load; find out why and fix it",
+      "ok": true,
+      "ladder": "write",
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1184,
+      "depth": 3.0,
+      "breadth": 1.98,
+      "signals": {
+        "self_contained": 0.68,
+        "read_only": 0.12,
+        "high_stakes": 0.96,
+        "unknown_cause": 0.98,
+        "design": 0.45
+      },
+      "reasons": [
+        "high-stakes hard edit -> architect"
+      ]
+    },
+    {
+      "task": "The test suite fails randomly about one run in ten; find the flaky cause and fix it",
+      "ok": true,
+      "ladder": "write",
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1160,
+      "depth": 3.0,
+      "breadth": 1.73,
+      "signals": {
+        "self_contained": 0.72,
+        "read_only": 0.09,
+        "high_stakes": 0.08,
+        "unknown_cause": 0.98,
+        "design": 0.18
+      },
+      "reasons": [
+        "unknown cause or hard -> debugger"
+      ]
+    },
+    {
+      "task": "Users report the app freezes when opening large PDFs; diagnose and fix",
+      "ok": true,
+      "ladder": "write",
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1094,
+      "depth": 2.94,
+      "breadth": 1.9,
+      "signals": {
+        "self_contained": 0.62,
+        "read_only": 0.11,
+        "high_stakes": 0.15,
+        "unknown_cause": 0.94,
+        "design": 0.5
+      },
+      "reasons": [
+        "unknown cause or hard -> debugger"
+      ]
+    },
+    {
+      "task": "Memory grows steadily in the worker process until it crashes; find the leak and fix it",
+      "ok": true,
+      "ladder": "write",
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1145,
+      "depth": 2.99,
+      "breadth": 1.85,
+      "signals": {
+        "self_contained": 0.61,
+        "read_only": 0.09,
+        "high_stakes": 0.34,
+        "unknown_cause": 0.97,
+        "design": 0.23
+      },
+      "reasons": [
+        "unknown cause or hard -> debugger"
+      ]
+    },
+    {
+      "task": "Design the plugin system: choose between a registry and entry points and define the interfaces",
+      "ok": false,
+      "ladder": "write",
+      "got": "main",
+      "got_tier": "architect",
+      "via": "main",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1114,
+      "depth": 3.0,
+      "breadth": 2.03,
+      "signals": {
+        "self_contained": 0.42,
+        "read_only": 0.56,
+        "high_stakes": 0.27,
+        "unknown_cause": 0.03,
+        "design": 0.99
+      },
+      "reasons": [
+        "design decision -> architect",
+        "not self-contained -> keep in main agent, or pass the needed context in the prompt"
+      ]
+    },
+    {
+      "task": "Design the caching layer: pick between Redis and an in-process LRU and define the interface",
+      "ok": false,
+      "ladder": "write",
+      "got": "main",
+      "got_tier": "architect",
+      "via": "main",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1115,
+      "depth": 3.0,
+      "breadth": 1.8,
+      "signals": {
+        "self_contained": 0.36,
+        "read_only": 0.55,
+        "high_stakes": 0.32,
+        "unknown_cause": 0.03,
+        "design": 0.99
+      },
+      "reasons": [
+        "design decision -> architect",
+        "not self-contained -> keep in main agent, or pass the needed context in the prompt"
+      ]
+    },
+    {
+      "task": "Rotate the Stripe webhook secret with a 24 hour overlap window",
+      "ok": true,
+      "ladder": "write",
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1101,
+      "depth": 2.17,
+      "breadth": 1.22,
+      "signals": {
+        "self_contained": 0.54,
+        "read_only": 0.07,
+        "high_stakes": 0.98,
+        "unknown_cause": 0.03,
+        "design": 0.18
+      },
+      "reasons": [
+        "high-stakes edit -> at least debugger",
+        "low confidence on depth -> debugger escalated to architect"
+      ]
+    },
+    {
+      "task": "Add a created_at column to the users table and backfill it for existing rows",
+      "ok": true,
+      "ladder": "write",
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1227,
+      "depth": 1.55,
+      "breadth": 0.59,
+      "signals": {
+        "self_contained": 0.77,
+        "read_only": 0.03,
+        "high_stakes": 0.93,
+        "unknown_cause": 0.02,
+        "design": 0.28
+      },
+      "reasons": [
+        "high-stakes edit -> at least debugger",
+        "low confidence on depth -> debugger escalated to architect"
+      ]
+    },
+    {
+      "task": "Move password hashing from SHA-256 to argon2 without locking out existing users",
+      "ok": true,
+      "ladder": "write",
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1209,
+      "depth": 2.83,
+      "breadth": 1.63,
+      "signals": {
+        "self_contained": 0.6,
+        "read_only": 0.06,
+        "high_stakes": 0.99,
+        "unknown_cause": 0.04,
+        "design": 0.79
+      },
+      "reasons": [
+        "design decision -> architect"
+      ]
+    },
+    {
+      "task": "Audit the whole monorepo for SQL injection and fix every instance",
+      "ok": true,
+      "ladder": "orchestrate",
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "via": "workflow",
+      "effort": "max",
+      "ladder_got": "orchestrate",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1279,
+      "depth": 2.92,
+      "breadth": 3.0,
+      "signals": {
+        "self_contained": 0.75,
+        "read_only": 0.04,
+        "high_stakes": 0.96,
+        "unknown_cause": 0.33,
+        "design": 0.29
+      },
+      "reasons": [
+        "high-stakes hard edit -> architect",
+        "breadth 3.00 >= 2.5 -> too broad for one context, orchestrate with Workflow"
+      ]
+    },
+    {
+      "task": "Migrate every service in the repo from the deprecated logging library to structlog",
+      "ok": true,
+      "ladder": "orchestrate",
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "via": "workflow",
+      "effort": "high",
+      "ladder_got": "orchestrate",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1203,
+      "depth": 2.14,
+      "breadth": 3.0,
+      "signals": {
+        "self_contained": 0.64,
+        "read_only": 0.03,
+        "high_stakes": 0.3,
+        "unknown_cause": 0.02,
+        "design": 0.25
+      },
+      "reasons": [
+        "multi-part edit -> engineer",
+        "breadth 3.00 >= 2.5 -> too broad for one context, orchestrate with Workflow"
+      ]
+    },
+    {
+      "task": "Now apply the approach we agreed on earlier to the other two endpoints",
+      "ok": true,
+      "ladder": "any",
+      "got": "main",
+      "got_tier": "debugger",
+      "via": "main",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1206,
+      "depth": 1.73,
+      "breadth": 1.17,
+      "signals": {
+        "self_contained": 0.13,
+        "read_only": 0.19,
+        "high_stakes": 0.22,
+        "unknown_cause": 0.07,
+        "design": 0.07
+      },
+      "reasons": [
+        "multi-part edit -> engineer",
+        "low confidence on depth -> engineer escalated to debugger",
+        "not self-contained -> keep in main agent, or pass the needed context in the prompt"
+      ]
+    },
+    {
+      "task": "Do the same thing for the footer that you just did for the header",
+      "ok": true,
+      "ladder": "any",
+      "got": "main",
+      "got_tier": "engineer",
+      "via": "main",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1197,
+      "depth": 0.83,
+      "breadth": 0.61,
+      "signals": {
+        "self_contained": 0.15,
+        "read_only": 0.19,
+        "high_stakes": 0.06,
+        "unknown_cause": 0.05,
+        "design": 0.06
+      },
+      "reasons": [
+        "low confidence on depth -> builder escalated to engineer",
+        "not self-contained -> keep in main agent, or pass the needed context in the prompt"
+      ]
+    }
+  ],
+  "generated": "2026-09-25 07:22:49"
+}

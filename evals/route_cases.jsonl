@@ -1,0 +1,30 @@
+{"task": "Find where the login route is defined and list the files it imports", "ok": ["scout"], "ladder": "read"}
+{"task": "Which files import the date formatting helper?", "ok": ["scout"], "ladder": "read"}
+{"task": "List every TODO comment across the whole monorepo", "ok": ["scout"], "ladder": "read"}
+{"task": "What version of React does the web package use?", "ok": ["scout"], "ladder": "read"}
+{"task": "Explain end to end how authentication and session refresh work across the backend and the mobile app", "ok": ["analyst", "ultracode"], "ladder": "read"}
+{"task": "Explain how the payment webhook handler validates signatures and updates orders", "ok": ["analyst"], "ladder": "read"}
+{"task": "Investigate why builds are slow across all packages in the monorepo and report findings, no changes", "ok": ["analyst", "ultracode"], "ladder": "read"}
+{"task": "Review the diff on this branch for correctness bugs and report them without editing", "ok": ["analyst", "scout"], "ladder": "read"}
+{"task": "Rename the variable usr to user in src/profile.py", "ok": ["builder"], "ladder": "write"}
+{"task": "Fix the typo 'recieve' in the README", "ok": ["builder"], "ladder": "write"}
+{"task": "Bump the axios dependency to 1.7.4 in package.json", "ok": ["builder"], "ladder": "write"}
+{"task": "Add a --verbose flag to the CLI in cli.py that prints each processed file", "ok": ["builder", "engineer"], "ladder": "write"}
+{"task": "Replace the string colour with color in every file of the repository", "ok": ["builder"], "ladder": "write"}
+{"task": "Add pagination to the three list endpoints in api/ and update their tests", "ok": ["engineer"], "ladder": "write"}
+{"task": "Extract the duplicated retry logic in the three HTTP clients into one shared helper and update callers", "ok": ["engineer"], "ladder": "write"}
+{"task": "Add dark mode support to the settings screen and persist the choice", "ok": ["engineer", "builder"], "ladder": "write"}
+{"task": "Write unit tests for the invoice total calculation module", "ok": ["builder", "engineer"], "ladder": "write"}
+{"task": "Checkout intermittently double-charges customers under load; find out why and fix it", "ok": ["debugger", "architect"], "ladder": "write"}
+{"task": "The test suite fails randomly about one run in ten; find the flaky cause and fix it", "ok": ["debugger"], "ladder": "write"}
+{"task": "Users report the app freezes when opening large PDFs; diagnose and fix", "ok": ["debugger"], "ladder": "write"}
+{"task": "Memory grows steadily in the worker process until it crashes; find the leak and fix it", "ok": ["debugger"], "ladder": "write"}
+{"task": "Design the plugin system: choose between a registry and entry points and define the interfaces", "ok": ["architect"], "ladder": "write"}
+{"task": "Design the caching layer: pick between Redis and an in-process LRU and define the interface", "ok": ["architect"], "ladder": "write"}
+{"task": "Rotate the Stripe webhook secret with a 24 hour overlap window", "ok": ["architect", "debugger"], "ladder": "write"}
+{"task": "Add a created_at column to the users table and backfill it for existing rows", "ok": ["architect", "debugger", "engineer"], "ladder": "write"}
+{"task": "Move password hashing from SHA-256 to argon2 without locking out existing users", "ok": ["architect"], "ladder": "write"}
+{"task": "Audit the whole monorepo for SQL injection and fix every instance", "ok": ["ultracode"], "ladder": "orchestrate"}
+{"task": "Migrate every service in the repo from the deprecated logging library to structlog", "ok": ["ultracode"], "ladder": "orchestrate"}
+{"task": "Now apply the approach we agreed on earlier to the other two endpoints", "ok": ["main"], "ladder": "any"}
+{"task": "Do the same thing for the footer that you just did for the header", "ok": ["main"], "ladder": "any"}

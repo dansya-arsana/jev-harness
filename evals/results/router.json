@@ -1,0 +1,441 @@
+{
+  "summary": {
+    "condition_prompts": 24,
+    "condition_exact": "23/24",
+    "condition_precision": 1.0,
+    "condition_recall": 0.923,
+    "skill_prompts": 12,
+    "skill_correct": "12/12",
+    "latency_ms": {
+      "p50": 1607,
+      "p95": 2724,
+      "max": 3554
+    },
+    "misses": [
+      {
+        "prompt": "after deploying to staging, generate a release announcement image",
+        "want": [
+          "staging-deploy",
+          "media-tools"
+        ],
+        "got": [
+          "media-tools"
+        ]
+      }
+    ],
+    "skill_rows": [
+      {
+        "prompt": "make a landing page for my coffee brand with a premium editorial feel",
+        "want": "design|frontend|taste|ui|visual|web",
+        "suggested": "design-taste-frontend",
+        "ok": true
+      },
+      {
+        "prompt": "redesign our existing settings page so it looks less generic",
+        "want": "design|redesign|frontend|taste|ui",
+        "suggested": "redesign-existing-projects",
+        "ok": true
+      },
+      {
+        "prompt": "write a SQL query for monthly active users by country in BigQuery",
+        "want": "sql|query|data",
+        "suggested": "data:write-query",
+        "ok": true
+      },
+      {
+        "prompt": "plot weekly revenue by product as a stacked bar chart",
+        "want": "viz|chart|data|visual",
+        "suggested": "data:create-viz",
+        "ok": true
+      },
+      {
+        "prompt": "turn these meeting notes into a PowerPoint deck",
+        "want": "pptx|slide|deck",
+        "suggested": "anthropic-skills:pptx",
+        "ok": true
+      },
+      {
+        "prompt": "fill in this PDF form with the values from the spreadsheet",
+        "want": "pdf|form|xlsx",
+        "suggested": "anthropic-skills:pdf",
+        "ok": true
+      },
+      {
+        "prompt": "review this pull request for security problems",
+        "want": "review|security",
+        "suggested": "engineering:code-review",
+        "ok": true
+      },
+      {
+        "prompt": "what is the capital of France, briefly?",
+        "want": "none",
+        "suggested": null,
+        "ok": true
+      },
+      {
+        "prompt": "rename the variable usr to user in profile.py",
+        "want": "none",
+        "suggested": null,
+        "ok": true
+      },
+      {
+        "prompt": "thanks, that fixed it. why did the old version crash though?",
+        "want": "none",
+        "suggested": null,
+        "ok": true
+      },
+      {
+        "prompt": "add a unit test for the parseDate helper",
+        "want": "none|test",
+        "suggested": null,
+        "ok": true
+      },
+      {
+        "prompt": "explain the difference between a mutex and a semaphore",
+        "want": "none",
+        "suggested": null,
+        "ok": true
+      }
+    ]
+  },
+  "rows": [
+    {
+      "prompt": "compose a 30 second tense music cue for the wolf attack scene",
+      "fire": [
+        "media-tools"
+      ],
+      "fired": [
+        "media-tools"
+      ],
+      "suggested": null,
+      "ms": 1521,
+      "ok": true
+    },
+    {
+      "prompt": "generate footsteps-in-snow sound effects, three variations",
+      "fire": [
+        "media-tools"
+      ],
+      "fired": [
+        "media-tools"
+      ],
+      "suggested": null,
+      "ms": 1607,
+      "ok": true
+    },
+    {
+      "prompt": "make a voiceover of this script in a calm British voice",
+      "fire": [
+        "media-tools"
+      ],
+      "fired": [
+        "media-tools"
+      ],
+      "suggested": null,
+      "ms": 2521,
+      "ok": true
+    },
+    {
+      "prompt": "generate a hero image of a snowy mountain camp for the store page",
+      "fire": [
+        "media-tools"
+      ],
+      "fired": [
+        "media-tools"
+      ],
+      "suggested": "imagegen-frontend-web",
+      "ms": 2538,
+      "ok": true
+    },
+    {
+      "prompt": "turn this concept art into a 3D model I can put in the game",
+      "fire": [
+        "media-tools"
+      ],
+      "fired": [
+        "media-tools"
+      ],
+      "suggested": null,
+      "ms": 1507,
+      "ok": true
+    },
+    {
+      "prompt": "create a 10 second product teaser video from these two photos",
+      "fire": [
+        "media-tools"
+      ],
+      "fired": [
+        "media-tools"
+      ],
+      "suggested": "anthropic-skills:seedance-2-director",
+      "ms": 2722,
+      "ok": true
+    },
+    {
+      "prompt": "upscale this screenshot and remove the background",
+      "fire": [
+        "media-tools"
+      ],
+      "fired": [
+        "media-tools"
+      ],
+      "suggested": null,
+      "ms": 1380,
+      "ok": true
+    },
+    {
+      "prompt": "plot a bar chart of weekly signups from this csv with matplotlib",
+      "fire": [],
+      "fired": [],
+      "suggested": "data:create-viz",
+      "ms": 2482,
+      "ok": true
+    },
+    {
+      "prompt": "add a particle snow effect to the RealityKit scene in code",
+      "fire": [],
+      "fired": [],
+      "suggested": null,
+      "ms": 1425,
+      "ok": true
+    },
+    {
+      "prompt": "fix the audio playback crash when the app goes to background",
+      "fire": [],
+      "fired": [],
+      "suggested": "engineering:debug",
+      "ms": 2706,
+      "ok": true
+    },
+    {
+      "prompt": "resize the thumbnails in the gallery grid so they fit on iPad",
+      "fire": [],
+      "fired": [],
+      "suggested": null,
+      "ms": 1495,
+      "ok": true
+    },
+    {
+      "prompt": "write a shader that makes the water shimmer",
+      "fire": [],
+      "fired": [],
+      "suggested": null,
+      "ms": 1456,
+      "ok": true
+    },
+    {
+      "prompt": "deploy the latest build to the staging server",
+      "fire": [
+        "staging-deploy"
+      ],
+      "fired": [
+        "staging-deploy"
+      ],
+      "suggested": null,
+      "ms": 2537,
+      "ok": true
+    },
+    {
+      "prompt": "staging is returning 502s since the last deploy, can you check the proxy",
+      "fire": [
+        "staging-deploy"
+      ],
+      "fired": [
+        "staging-deploy"
+      ],
+      "suggested": "engineering:debug",
+      "ms": 2495,
+      "ok": true
+    },
+    {
+      "prompt": "roll back staging to yesterday's release",
+      "fire": [
+        "staging-deploy"
+      ],
+      "fired": [
+        "staging-deploy"
+      ],
+      "suggested": null,
+      "ms": 2462,
+      "ok": true
+    },
+    {
+      "prompt": "set up a GitHub Actions workflow that runs the tests on every PR",
+      "fire": [],
+      "fired": [],
+      "suggested": null,
+      "ms": 1414,
+      "ok": true
+    },
+    {
+      "prompt": "write a Dockerfile for the API service",
+      "fire": [],
+      "fired": [],
+      "suggested": null,
+      "ms": 1460,
+      "ok": true
+    },
+    {
+      "prompt": "refactor the checkout reducer to remove the duplicated switch cases",
+      "fire": [],
+      "fired": [],
+      "suggested": null,
+      "ms": 1420,
+      "ok": true
+    },
+    {
+      "prompt": "why does this regex not match email addresses with a plus sign",
+      "fire": [],
+      "fired": [],
+      "suggested": null,
+      "ms": 1439,
+      "ok": true
+    },
+    {
+      "prompt": "explain what a monad is in simple terms",
+      "fire": [],
+      "fired": [],
+      "suggested": null,
+      "ms": 1387,
+      "ok": true
+    },
+    {
+      "prompt": "write a SQL query for monthly active users by country in BigQuery",
+      "fire": [],
+      "fired": [],
+      "suggested": "data:write-query",
+      "ms": 2696,
+      "ok": true
+    },
+    {
+      "prompt": "summarize the main arguments of this design doc in five bullets",
+      "fire": [],
+      "fired": [],
+      "suggested": null,
+      "ms": 1412,
+      "ok": true
+    },
+    {
+      "prompt": "record a short jingle for the app's launch trailer and generate the trailer thumbnail",
+      "fire": [
+        "media-tools"
+      ],
+      "fired": [
+        "media-tools"
+      ],
+      "suggested": null,
+      "ms": 1441,
+      "ok": true
+    },
+    {
+      "prompt": "after deploying to staging, generate a release announcement image",
+      "fire": [
+        "staging-deploy",
+        "media-tools"
+      ],
+      "fired": [
+        "media-tools"
+      ],
+      "suggested": "anthropic-skills:canvas-design",
+      "ms": 3554,
+      "ok": false
+    },
+    {
+      "prompt": "make a landing page for my coffee brand with a premium editorial feel",
+      "skill": "design|frontend|taste|ui|visual|web",
+      "fired": [],
+      "suggested": "design-taste-frontend",
+      "ms": 2956,
+      "ok": true
+    },
+    {
+      "prompt": "redesign our existing settings page so it looks less generic",
+      "skill": "design|redesign|frontend|taste|ui",
+      "fired": [],
+      "suggested": "redesign-existing-projects",
+      "ms": 2724,
+      "ok": true
+    },
+    {
+      "prompt": "write a SQL query for monthly active users by country in BigQuery",
+      "skill": "sql|query|data",
+      "fired": [],
+      "suggested": "data:write-query",
+      "ms": 2549,
+      "ok": true
+    },
+    {
+      "prompt": "plot weekly revenue by product as a stacked bar chart",
+      "skill": "viz|chart|data|visual",
+      "fired": [],
+      "suggested": "data:create-viz",
+      "ms": 2586,
+      "ok": true
+    },
+    {
+      "prompt": "turn these meeting notes into a PowerPoint deck",
+      "skill": "pptx|slide|deck",
+      "fired": [],
+      "suggested": "anthropic-skills:pptx",
+      "ms": 2470,
+      "ok": true
+    },
+    {
+      "prompt": "fill in this PDF form with the values from the spreadsheet",
+      "skill": "pdf|form|xlsx",
+      "fired": [],
+      "suggested": "anthropic-skills:pdf",
+      "ms": 2508,
+      "ok": true
+    },
+    {
+      "prompt": "review this pull request for security problems",
+      "skill": "review|security",
+      "fired": [],
+      "suggested": "engineering:code-review",
+      "ms": 2606,
+      "ok": true
+    },
+    {
+      "prompt": "what is the capital of France, briefly?",
+      "skill": "none",
+      "fired": [],
+      "suggested": null,
+      "ms": 1438,
+      "ok": true
+    },
+    {
+      "prompt": "rename the variable usr to user in profile.py",
+      "skill": "none",
+      "fired": [],
+      "suggested": null,
+      "ms": 1439,
+      "ok": true
+    },
+    {
+      "prompt": "thanks, that fixed it. why did the old version crash though?",
+      "skill": "none",
+      "fired": [],
+      "suggested": null,
+      "ms": 1427,
+      "ok": true
+    },
+    {
+      "prompt": "add a unit test for the parseDate helper",
+      "skill": "none|test",
+      "fired": [],
+      "suggested": null,
+      "ms": 1400,
+      "ok": true
+    },
+    {
+      "prompt": "explain the difference between a mutex and a semaphore",
+      "skill": "none",
+      "fired": [],
+      "suggested": null,
+      "ms": 1450,
+      "ok": true
+    }
+  ],
+  "generated": "2026-09-25 07:23:08"
+}

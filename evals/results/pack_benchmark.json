@@ -1,0 +1,164 @@
+{
+  "description": "Context-pack benchmark: jev-analyst (claude-opus-5-5, effort high) answering read-only code questions with and without a jevpack slice. Token/tool/time figures are the Agent tool's reported subagent_tokens, tool_uses and duration_ms.",
+  "runs": [
+    {
+      "codebase": "private Swift/RealityKit game (39 files, ~8.3k lines)",
+      "question": "wolf targeting and attack logic",
+      "without": {
+        "tokens": 21385,
+        "tools": 5,
+        "ms": 20973
+      },
+      "with": {
+        "tokens": 14627,
+        "tools": 2,
+        "ms": 16022
+      },
+      "note": "slice was hand-trimmed and pasted into the prompt (smaller than a real slice); flattering"
+    },
+    {
+      "codebase": "private Swift/RealityKit game (39 files, ~8.3k lines)",
+      "question": "wall damage and destruction",
+      "without": {
+        "tokens": 25289,
+        "tools": 5,
+        "ms": 25596
+      },
+      "with": {
+        "tokens": 14600,
+        "tools": 2,
+        "ms": 13155
+      },
+      "note": "slice was hand-trimmed and pasted into the prompt (smaller than a real slice); flattering"
+    },
+    {
+      "codebase": "pallets/click 8.1.7 @874ca2b (16 files, ~10.1k lines)",
+      "question": "Q1 parameter value resolution order",
+      "without": {
+        "tokens": 15462,
+        "tools": 3,
+        "ms": 17123
+      },
+      "with": {
+        "tokens": 23101,
+        "tools": 1,
+        "ms": 12811
+      },
+      "slice": {
+        "full": 26,
+        "outline": 60,
+        "hidden": 395,
+        "slice_tokens_est": 5637,
+        "file_bytes": 31689
+      }
+    },
+    {
+      "codebase": "pallets/click 8.1.7 @874ca2b (16 files, ~10.1k lines)",
+      "question": "Q2 group subcommand dispatch and chaining",
+      "without": {
+        "tokens": 16994,
+        "tools": 5,
+        "ms": 22817
+      },
+      "with": {
+        "tokens": 24064,
+        "tools": 2,
+        "ms": 14759
+      },
+      "slice": {
+        "full": 17,
+        "outline": 55,
+        "hidden": 409,
+        "slice_tokens_est": 6202,
+        "file_bytes": 33668
+      }
+    },
+    {
+      "codebase": "pallets/click 8.1.7 @874ca2b (16 files, ~10.1k lines)",
+      "question": "Q3 shell completion detection and candidates",
+      "without": {
+        "tokens": 17319,
+        "tools": 4,
+        "ms": 27647
+      },
+      "with": {
+        "tokens": 27618,
+        "tools": 2,
+        "ms": 16972
+      },
+      "slice": {
+        "full": 41,
+        "outline": 23,
+        "hidden": 417,
+        "slice_tokens_est": 7779,
+        "file_bytes": 40246
+      }
+    }
+  ],
+  "pack": {
+    "click": {
+      "files": 16,
+      "chunks": 481,
+      "pack_tokens_est": 87058,
+      "build_s": 0.1,
+      "slice_jev_tokens": 159640,
+      "slice_latency_ms": [
+        2723,
+        2803,
+        2667
+      ],
+      "slice_cost_usd_each": 0.0067
+    }
+  },
+  "blind_label_map": {
+    "Q1": {
+      "A": "without",
+      "B": "with"
+    },
+    "Q2": {
+      "A": "with",
+      "B": "without"
+    },
+    "Q3": {
+      "A": "without",
+      "B": "with"
+    }
+  },
+  "blind_grading": {
+    "grader": "jev-reviewer (claude-opus-5-5, effort medium), answers labeled A/B, order swapped on Q2, every citation checked against source",
+    "Q1": {
+      "without": {
+        "score": 9,
+        "citations": "15/15"
+      },
+      "with": {
+        "score": 8,
+        "citations": "14/14"
+      },
+      "verdict": "equal"
+    },
+    "Q2": {
+      "without": {
+        "score": 9,
+        "citations": "16/16"
+      },
+      "with": {
+        "score": 8,
+        "citations": "12/12"
+      },
+      "verdict": "equal"
+    },
+    "Q3": {
+      "without": {
+        "score": 8,
+        "citations": "12/12"
+      },
+      "with": {
+        "score": 9,
+        "citations": "23/23"
+      },
+      "verdict": "equal"
+    },
+    "factual_errors": 0
+  }
+}
