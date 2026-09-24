@@ -113,6 +113,9 @@ def route_case(case):
     except ValueError:
         return dict(case, error=p.stdout[:200] + p.stderr[:200], ok=False, ladder_ok=False, ms=ms)
     tier = "main" if d.get("via") == "main" else d.get("tier")
+    # advisor is architect-level effort without edit tools: it satisfies an "architect" label for advice questions
+    if tier == "advisor" and "architect" in case["ok"]:
+        tier = "architect"
     got_ladder = d.get("ladder")
     ok = tier in case["ok"]
     # Tier choice judged on its own: a task kept in the main session still gets a tier and effort.
@@ -123,13 +126,13 @@ def route_case(case):
         ladder_ok = got_ladder in ("read", "orchestrate") or tier == "main"
     else:
         ladder_ok = got_ladder in ("write", "orchestrate") or tier == "main"
-    return dict(case, got=tier, got_tier=d.get("tier"), via=d.get("via"), effort=d.get("effort"), ladder_got=got_ladder,
+    return dict(case, acceptable=case["ok"], got=tier, got_tier=d.get("tier"), via=d.get("via"), effort=d.get("effort"), ladder_got=got_ladder,
                 ok=ok, tier_ok=tier_ok, ladder_ok=ladder_ok, ms=ms, depth=d.get("depth"), breadth=d.get("breadth"),
                 signals=d.get("signals"), reasons=d.get("reasons"))
 
 
-def eval_route():
-    rows = pmap(route_case, load("route_cases.jsonl"))
+def eval_route(cases="route_cases.jsonl", out="route"):
+    rows = pmap(route_case, load(cases))
     read_rows = [r for r in rows if r["ladder"] == "read"]
     summary = {
         "cases": len(rows),
@@ -143,10 +146,10 @@ def eval_route():
         "errors": sum(1 for r in rows if r.get("error")),
         "latency_ms": {"p50": pct([r["ms"] for r in rows], .5), "p95": pct([r["ms"] for r in rows], .95)},
         "misses": [{"task": r["task"][:80], "want": r["ok"] if isinstance(r["ok"], list) else None,
-                    "acceptable": [c for c in load("route_cases.jsonl") if c["task"] == r["task"]][0]["ok"],
+                    "acceptable": [c for c in load(cases) if c["task"] == r["task"]][0]["ok"],
                     "got": r.get("got"), "effort": r.get("effort")} for r in rows if not r["ok"]],
     }
-    save("route", {"summary": summary, "rows": rows})
+    save(out, {"summary": summary, "rows": rows})
     return summary
 
 
@@ -222,7 +225,11 @@ def eval_router():
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     suites = {"gate": eval_gate, "route": eval_route, "router": eval_router,
-              "gate-heldout": lambda: eval_gate("gate_cases_heldout.jsonl", "gate_heldout")}
+              "gate-heldout": lambda: eval_gate("gate_cases_heldout.jsonl", "gate_heldout"),
+              "gate-heldout2": lambda: eval_gate("gate_cases_heldout2.jsonl", "gate_heldout2"),
+              "route-heldout": lambda: eval_route("route_cases_heldout.jsonl", "route_heldout"),
+              "route-heldout2": lambda: eval_route("route_cases_heldout2.jsonl", "route_heldout2"),
+              "route-heldout3": lambda: eval_route("route_cases_heldout3.jsonl", "route_heldout3")}
     for name in (["gate", "route", "router"] if which == "all" else [which]):
         t = time.time()
         s = suites[name]()

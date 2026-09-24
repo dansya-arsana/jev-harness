@@ -12,7 +12,7 @@ Jev is TypeSafe's decision model. It doesn't write code or text. It returns type
 |---|---|---|
 | **Permission gate** | `PreToolUse` | Hard rules deny or ask instantly. Routine dev commands pass silently in about 45 ms. Only the unclear middle goes to Jev (about 1.1 s), which reads a script's contents before it runs. Never auto-approves. |
 | **Prompt router** | `UserPromptSubmit` | Suggests at most one fitting skill (the two-request design from TypeSafe's skill-suggestion cookbook), and injects your own instructions only when their condition holds. Skips slash commands and short replies. |
-| **Effort tiers** | `agents/jev-*.md` | Seven subagents on one model (`claude-opus-5-5`) that differ by reasoning effort. Read-only: scout (low), analyst (high), reviewer (medium). Write: builder (medium), engineer (high), debugger (xhigh), architect (max). Plus *ultracode*: orchestrate with a Workflow. |
+| **Effort tiers** | `agents/jev-*.md` | Eight subagents on one model (`claude-opus-5-5`) that differ by reasoning effort. Read-only: scout (low), analyst (high), advisor (max), reviewer (medium). Write: builder (medium), engineer (high), debugger (xhigh), architect (max). Plus *ultracode*: orchestrate with a Workflow. |
 | **Router CLI** | `jev.py route / stuck / dedupe` | Jev picks the tier, effort, and whether a task can run in parallel. It escalates when an agent is stuck (never across the read/write boundary) and catches duplicate subgoals. |
 | **Context packs** | `jevpack.py build / slice` | Gathers code once as function/class chunks. Jev scores every chunk per subtask: full, outline, or hidden. |
 | **Report** | `jev.py report` | Summarizes the logs: what the gate flagged, slow prompts, Jev errors, routing decisions. |
@@ -21,15 +21,15 @@ Jev is TypeSafe's decision model. It doesn't write code or text. It returns type
 
 | | Result |
 |---|---|
-| Gate, held-out set (63 commands written independently) | 12/12 harmful commands denied, **0/38** false denies, 6 benign commands got an unnecessary "ask" |
+| Gate, fresh held-out set (64 commands, never tuned on) | **64/64**: 12/12 harmful denied, **0/40** false denies, 30/30 routine silent |
 | Gate, end to end in `bypassPermissions` mode | deny honored (desktop app and headless `claude -p`) |
-| Routing, held-out set (40 tasks) | 34/40 acceptable tier, **0/12** read-only tasks given edit tools |
+| Routing, untouched final set (50 tasks) | **47/50** acceptable (94%); **0/49** read-only tasks given edit tools across all sets |
 | Conditional instructions (24 prompts) | precision 1.00, recall 0.92 |
 | Skill suggestion (12 prompts, 95 installed skills) | 12/12 (depends on the skills you have installed) |
-| Context packs on Click 8.1.7 (3 questions) | about half the tool calls, 25–38% faster, but **+42–59% tokens** |
+| Context packs on Click 8.1.7 (3 questions) | 16–32% faster, equal answer quality (blind-graded), **+7–25% tokens** with outline-first slices |
 | Jev cost | about $0.00002 per gate or route call, about $0.007 per 480-chunk slice |
 
-The context-pack result is mixed on purpose; [the report](docs/REPORT.md#54-context-packs) explains when it helps and when it doesn't.
+The report also documents an overfitting episode: a routing fix that scored 90% on a reused test set scored 62% on a fresh one. It covers how that was fixed and re-tested ([section 5.6](docs/REPORT.md#56-round-2-fixing-the-gaps-and-re-testing)).
 
 ## Install
 
@@ -55,10 +55,12 @@ If your `settings.json` remaps the model aliases (`ANTHROPIC_DEFAULT_OPUS_MODEL`
 ## Test and evaluate
 
 ```bash
-python3 skill/jev-orchestrator/hooks/tests/test_permission_gate.py   # 20 unit tests
+python3 skill/jev-orchestrator/hooks/tests/test_permission_gate.py   # 24 unit tests
+python3 skill/jev-orchestrator/scripts/tests/test_route_policy.py    # 14 offline policy tests
 python3 skill/jev-orchestrator/hooks/tests/test_prompt_router.py     # 17 unit tests
 python3 evals/run_evals.py all            # labeled evals -> evals/results/*.json
-python3 evals/run_evals.py gate-heldout   # held-out gate set
+python3 evals/run_evals.py gate-heldout2   # fresh held-out gate set
+python3 evals/run_evals.py route-heldout3  # untouched final routing set
 ```
 
 Gate tests and evals only pipe JSON describing a command into the hook; no evaluated command is ever executed. Jev-dependent tests skip when Jev is unreachable.
@@ -67,7 +69,7 @@ Gate tests and evals only pipe JSON describing a command into the hook; no evalu
 
 ```
 skill/jev-orchestrator/   SKILL.md, scripts/ (jev.py, jevpack.py, jevlib.py), hooks/ (+ tests/)
-agents/                   jev-scout, -analyst, -reviewer, -builder, -engineer, -debugger, -architect
+agents/                   jev-scout, -analyst, -advisor, -reviewer, -builder, -engineer, -debugger, -architect
 config/                   conditions.example.json
 evals/                    labeled cases, held-out cases, run_evals.py, results/
 docs/REPORT.md            research write-up

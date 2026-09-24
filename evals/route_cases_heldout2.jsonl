@@ -1,0 +1,40 @@
+{"task": "Where is the Stripe webhook signature verified in this Rails app? Just point me to the file and line.", "ok": ["scout"], "ladder": "read"}
+{"task": "what version of tokio are we pinned to in the workspace Cargo.toml", "ok": ["scout"], "ladder": "read"}
+{"task": "List every call site of UserRepository.findByEmail in the Spring Boot service.", "ok": ["scout"], "ladder": "read"}
+{"task": "Which Terraform module defines the prod RDS instance?", "ok": ["scout"], "ladder": "read"}
+{"task": "hey quick one - in the Unity project, which script on the Player prefab handles input?", "ok": ["scout"], "ladder": "read"}
+{"task": "Where does the auth service read the JWT signing secret from the environment? Don't change anything, I just need the location.", "ok": ["scout"], "ladder": "read"}
+{"task": "Explain how a refund flows from the admin dashboard through to the Adyen API and back into our ledger tables. No changes please, I need to understand it before the PCI audit.", "ok": ["analyst"], "ladder": "read"}
+{"task": "Walk me through how the Flutter app's offline sync works end to end: the local queue, conflict handling, and retry/backoff across the repository and data layers.", "ok": ["analyst"], "ladder": "read"}
+{"task": "Why does our PyTorch training pipeline use two different tokenizers? Trace where each one is used across preprocessing, training and inference, and summarize the implications.", "ok": ["analyst"], "ladder": "read"}
+{"task": "Can you map out how OAuth scopes get enforced across the API gateway, the middleware and the individual controllers? Read-only, I'm writing internal docs.", "ok": ["analyst"], "ladder": "read"}
+{"task": "Review how the STM32 firmware's interrupt handlers share state with the main loop and write up any spots that rely on implicit ordering or missing volatile/critical sections. Don't fix anything yet.", "ok": ["analyst"], "ladder": "read"}
+{"task": "Summarize the dependency graph between our Terraform modules and explain which stacks would be affected if we changed the VPC CIDR.", "ok": ["analyst"], "ladder": "read"}
+{"task": "Bump the default page size in app/controllers/api/v1/orders_controller.rb from 25 to 50.", "ok": ["builder"], "ladder": "write"}
+{"task": "typo in src/config.rs error message: 'recieved' -> 'received'", "ok": ["builder"], "ladder": "write"}
+{"task": "Add a toString() override to the Invoice DTO in the Spring project that prints id, amount and status.", "ok": ["builder"], "ladder": "write"}
+{"task": "In the Flutter settings screen, make the logout button red and show a confirmation dialog before it actually logs out.", "ok": ["builder"], "ladder": "write"}
+{"task": "add a --dry-run flag to scripts/prune_checkpoints.py that prints what would be deleted instead of deleting it", "ok": ["builder"], "ladder": "write"}
+{"task": "The spawn interval in EnemySpawner.cs is hardcoded to 2f. Expose it as a [SerializeField] so designers can tweak it in the inspector.", "ok": ["builder"], "ladder": "write"}
+{"task": "Rename CustomerAccount to Account everywhere in the Rails app: models, controllers, serializers, specs, factories and the migration-free table alias. It's purely mechanical.", "ok": ["engineer"], "ladder": "write"}
+{"task": "Thread a tenant_id field from the gRPC request proto through the handler, service layer and sqlx repository in the Rust orders service so it's persisted with each order.", "ok": ["engineer"], "ladder": "write"}
+{"task": "Replace every use of the deprecated log.Printf with our structured logger.Info helper across all the Go packages under cmd/ and internal/.", "ok": ["engineer"], "ladder": "write"}
+{"task": "We're dropping Moment.js for date-fns in the React frontend. The function mapping is already in the ticket, please convert all ~40 files that import moment.", "ok": ["engineer"], "ladder": "write"}
+{"task": "Add a `retries` option to the ML pipeline config: parse it from the YAML, pass it into the DataLoader wrapper and the S3 upload step, and document it in the README.", "ok": ["engineer"], "ladder": "write"}
+{"task": "Add a /healthz endpoint to the Spring service, point the Kubernetes readiness probe in the Helm chart at it, and add an integration test for it.", "ok": ["engineer"], "ladder": "write"}
+{"task": "Upgrade our Terraform modules to AWS provider v5: split the inline acl/versioning blocks on aws_s3_bucket into the separate resources, following the official upgrade guide.", "ok": ["engineer", "architect"], "ladder": "write"}
+{"task": "OrderSpec fails roughly 1 in 10 CI runs with 'Deadlock detected' and I can't reproduce it locally. Figure out why and fix it.", "ok": ["debugger"], "ladder": "write"}
+{"task": "Our Rust ingest service's p99 latency spikes every few minutes and nobody knows why. Find the cause and fix it.", "ok": ["debugger"], "ladder": "write"}
+{"task": "The firmware sometimes reads a garbage temperature from the I2C sensor right after waking from sleep. Track it down and fix it.", "ok": ["debugger"], "ladder": "write"}
+{"task": "Eval accuracy dropped from 91% to 84% after last week's merges but nothing obvious changed in the model code. Find what caused the regression and fix it.", "ok": ["debugger"], "ladder": "write"}
+{"task": "players occasionally fall through the floor in our Unity game, seems to happen more on 144Hz monitors. can you fix it?", "ok": ["debugger"], "ladder": "write"}
+{"task": "we're kinda torn between Redis locks and Postgres advisory locks for the job scheduler... which would you go with? pick one and wire it up", "ok": ["architect"], "ladder": "write"}
+{"task": "Someone committed the live Stripe secret key in config/secrets.yml. Get it out of the repo and move us onto the Vault-backed secrets setup.", "ok": ["architect"], "ladder": "write"}
+{"task": "Write the migration that splits users.name into first_name and last_name on the production Postgres (about 80M rows) without downtime.", "ok": ["architect"], "ladder": "write"}
+{"task": "Add passwordless login via email magic links to the auth service.", "ok": ["architect"], "ladder": "write"}
+{"task": "Riverpod or Bloc for the new checkout flow in the Flutter app? Set up whichever you think fits better.", "ok": ["architect"], "ladder": "write"}
+{"task": "Audit the whole monorepo for security issues: the Rails API, the Go workers, the React frontend and the Terraform infra each need a proper look, then fix what you find.", "ok": ["ultracode"], "ladder": "orchestrate"}
+{"task": "Migrate all 14 microservices off our homegrown config library onto Spring Cloud Config. Each service loads config differently, so every one needs its own work.", "ok": ["ultracode"], "ladder": "orchestrate"}
+{"task": "Go through every part of the ML platform (ingestion, feature store, training, serving), find the performance bottlenecks in each, and fix them.", "ok": ["ultracode"], "ladder": "orchestrate"}
+{"task": "Do the same thing for the staging environment.", "ok": ["main"], "ladder": "any"}
+{"task": "ok that worked, now apply that fix to the other two controllers we talked about", "ok": ["main"], "ladder": "any"}

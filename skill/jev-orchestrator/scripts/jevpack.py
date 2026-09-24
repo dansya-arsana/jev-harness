@@ -51,7 +51,7 @@ LEVELS = [
     "Relevant: needed to understand how to do `subtask`",
     "Essential: must be read or changed to do `subtask`, or directly answers it",
 ]
-FULL_AT = 1.5      # score >= this -> show in full (budget permitting)
+FULL_AT = 2.2      # score >= this -> show in full (budget permitting): clearly relevant or essential only
 OUTLINE_AT = 0.7   # score >= this -> one-line outline
 
 
@@ -274,7 +274,7 @@ def cmd_slice(args):
            "Scored for this subtask: %s" % args.subtask,
            "Root: %s. %d chunks in full, %d outlined, %d hidden (of %d from %d files)." % (
                pack["root"], len(full), len(outline), hidden, len(chunks), len(pack["files"])),
-           "Start from this context. Open other files only if something you need is missing here.",
+           "Start from this context. Outlined chunks are listed as path:lines: Read just those lines if you need one.",
            "Each code line starts with its real line number in that file: cite those numbers.", ""]
     # Every line carries its real file line number, so citations never depend on counting from a header.
     for c in sorted(full, key=lambda c: order[c["id"]]):
@@ -310,7 +310,7 @@ def main():
     p.add_argument("paths", nargs="*"); p.add_argument("--files-from"); p.add_argument("--grep", action="append")
     p.add_argument("--root", default="."); p.set_defaults(fn=cmd_build)
     p = sub.add_parser("slice"); p.add_argument("name"); p.add_argument("--subtask", required=True)
-    p.add_argument("--budget", type=int, default=8000); p.add_argument("--json", action="store_true")
+    p.add_argument("--budget", type=int, default=4000); p.add_argument("--json", action="store_true")
     p.set_defaults(fn=cmd_slice)
     p = sub.add_parser("info"); p.add_argument("name"); p.set_defaults(fn=cmd_info)
     args = ap.parse_args()

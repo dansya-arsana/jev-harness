@@ -63,6 +63,9 @@ ASK_RULES = [
     (re.compile(r"(>>?|\btee\s+(-a\s+)?)\s*(/etc/|/usr/|/System/|/Library/|/private/|~/Library/LaunchAgents|%s/Library/LaunchAgents)"
                 % re.escape(HOME)), "writes to a system path"),
     (re.compile(r"\b(crontab\s+(-\w+\s+)*\S|launchctl\s+(load|bootstrap|enable))"), "installs a scheduled or background job"),
+    (re.compile(r"\bterraform\s+(apply|destroy|import|state\s+(rm|mv))\b|\bpulumi\s+(up|destroy)\b"), "changes real infrastructure"),
+    (re.compile(r"\bkubectl\s+(apply|delete|replace|scale|drain|cordon)\b|\bhelm\s+(install|upgrade|uninstall|rollback)\b"),
+     "changes a live cluster"),
     (re.compile(r"\brm\s+((-\w+|--[\w-]+)\s+)*-\w*[rR]\w*\s"), None),  # recursive delete: handled below (outside cwd -> ask)
 ]
 SECRET_FILE = re.compile(
@@ -88,8 +91,18 @@ ROUTINE = [
     re.compile(r"^(go\s+(test|build|vet|fmt|mod\s+tidy)|cargo\s+(test|build|check|clippy|fmt)|make(\s+(test|build|lint))?$)"),
     re.compile(r"^(tsc|eslint|prettier|ruff|black|mypy|swiftlint|swiftformat)\b"),
     re.compile(r"^(mkdir|touch)\s"),
-    re.compile(r"^git\s+(add|commit|checkout|switch|restore|merge|rebase|pull|stash|mv|rm\s+--cached)\b"),
+    re.compile(r"^git\s+(add|commit|checkout|switch|restore|merge|rebase|pull|stash|mv|rm\s+--cached|cherry-pick)\b"),
+    # Plain pushes (force pushes are caught earlier by the ask rules).
+    re.compile(r"^git\s+push(\s+(-u|--set-upstream|--tags|[\w./-]+))*\s*$"),
+    # Installing a project's own declared dependencies (single ad-hoc packages still go to Jev).
+    re.compile(r"^(pip3?|python3?\s+-m\s+pip)\s+install\s+(-r\s+\S+|-e\s+\.|\.)(\s+-\S+)*\s*$"),
+    re.compile(r"^(uv\s+sync|poetry\s+install|pipenv\s+install|bundle\s+install|pod\s+install|composer\s+install|go\s+mod\s+download)\b"),
+    # Building and running the project's own containers.
+    re.compile(r"^docker\s+(build|compose\s+(up|down|build|ps|logs|restart|stop|pull)|ps|images|logs)\b"),
+    re.compile(r"^docker-compose\s+(up|down|build|ps|logs|restart|stop|pull)\b"),
 ]
+BUILD_DIRS = {"node_modules", "dist", "build", ".next", ".nuxt", "out", "target", ".build", "DerivedData", "coverage",
+              "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".turbo", ".parcel-cache", ".cache"}
 SCRIPT_RUN = re.compile(
     r"(?:^|[;&|]\s*|\s)(?:python3?|node|bash|sh|zsh|ruby|perl|deno\s+run|bun\s+run|bun|tsx|ts-node)\s+(?:-{1,2}[\w-]+\s+)*"
     r"([^\s;|&<>'\"]+\.(?:py|js|mjs|cjs|ts|sh|bash|zsh|rb|pl))"
@@ -189,7 +202,12 @@ def segment_is_safe(tokens):
             return False
         if sub == "remote" and any(a in ("add", "remove", "rm", "set-url", "rename") for a in args):
             return False
-        return sub in GIT_READ
+        return sub in GIT_READ or any(p.search(joined) for p in ROUTINE)
+    if name == "rm":
+        # Deleting the project's own build output: every target is a known build dir, relative, no "..".
+        targets = [a for a in args if not a.startswith("-")]
+        return bool(targets) and all(not os.path.isabs(t) and ".." not in t.split("/") and not t.startswith("~")
+                                     and t.rstrip("/").split("/")[-1] in BUILD_DIRS for t in targets)
     return any(p.search(joined) for p in ROUTINE)
 
 
@@ -236,8 +254,39 @@ def check_file_tool(tool_input):
     return None
 
 
+SEARCH_CMDS = {"grep", "egrep", "fgrep", "rg", "ag", "ack"}
+
+
+def secret_text(cmd):
+    """The command minus search patterns. A pattern that merely names a secrets file isn't a read of it,
+    but the search's file arguments are kept, so searching inside a secrets file still counts."""
+    segs = segments(cmd)
+    if segs is None:
+        return cmd
+    out = []
+    for seg in segs:
+        if not seg or os.path.basename(seg[0]) not in SEARCH_CMDS:
+            out.append(" ".join(seg))
+            continue
+        kept, have_pattern, skip = [seg[0]], False, False
+        for a in seg[1:]:
+            if skip:            # the value after -e is a pattern
+                skip = False
+                continue
+            if a in ("-e", "--regexp"):
+                skip, have_pattern = True, True
+            elif a.startswith("-"):
+                kept.append(a)
+            elif not have_pattern:
+                have_pattern = True  # first positional is the pattern
+            else:
+                kept.append(a)       # later positionals are files: keep them
+        out.append(" ".join(kept))
+    return " ; ".join(out)
+
+
 def hard_rules(cmd):
-    if SECRET_REF.search(cmd) and NET_SEND.search(cmd):
+    if SECRET_REF.search(secret_text(cmd)) and NET_SEND.search(cmd):
         return ("deny", "reads credentials or keys and sends data over the network in the same command")
     if PIPE_TO_SHELL.search(cmd):
         return ("deny", "runs code downloaded from the network directly in a shell or interpreter")

@@ -21,10 +21,11 @@ Every subagent tier runs Claude Opus 5.5 (`claude-opus-5-5`, pinned in the agent
 | engineer | `jev-engineer` | high | write | coordinated multi-file changes with a known approach |
 | debugger | `jev-debugger` | xhigh | write | unknown root cause, intermittent bugs, subtle correctness |
 | architect | `jev-architect` | max | write | design decisions; security, secrets, payments, migrations, production |
+| advisor | `jev-advisor` | max | read | design questions that only need a recommendation (which library/approach, trade-offs) |
 | reviewer | `jev-reviewer` | medium | read | end-of-task diff review (you pick it; routing never returns it) |
 | ultracode | none: Workflow tool | per worker | orchestrate | too broad for one context: many subsystems, whole-codebase audits, many-file migrations, "be comprehensive" |
 
-Read-only agents have only `Read, Grep, Glob, Bash` and never modify files. Read-only tasks stay on the read ladder, and escalation never moves a task to another ladder. High stakes raises the tier only for writes. Jev rates any auth-related task as high stakes, even pure reading.
+Read-only agents have only `Read, Grep, Glob, Bash` and never modify files. A task that says not to edit ("don't fix anything", "report only", "read-only") always goes to the read ladder; when unsure, routing leans read-only, because a read agent that needed to write just reports back. Read-only tasks stay on the read ladder, and escalation never moves a task to another ladder. High stakes raises the tier only for writes, and only clear-cut stakes (a plausible mistake means a security, data, money or outage problem) reach architect; moderate stakes get engineer. An unknown cause always goes to debugger first. A Workflow (ultracode) needs exhaustive work across separate areas that isn't one repeated change.
 
 ## Loop
 
@@ -42,13 +43,13 @@ Read-only agents have only `Read, Grep, Glob, Bash` and never modify files. Read
 
 ## Context packs: search once, share with every subagent
 
-When two or more subagents (including the final reviewer) will work in the same area, gather the code once instead of letting each one re-explore. Measured effect (see the repo's `docs/REPORT.md`): slices cut tool calls by about half and wall time by 25–38%, but a full 8k-token slice can cost *more* tokens than letting an agent grep a small, well-organized codebase (+42–59% on Click). Use packs when speed matters, when several agents share one slice, or on large or unfamiliar code. Keep `--budget` small (3–5k) when tokens matter more than speed.
+When two or more subagents (including the final reviewer) will work in the same area, gather the code once instead of letting each one re-explore. Measured effect (see the repo's `docs/REPORT.md`): slices cut tool calls by about half and wall time by 25–38%, but a full 8k-token slice can cost *more* tokens than letting an agent grep a small, well-organized codebase (+42–59% on Click). Use packs when speed matters, when several agents share one slice, or on large or unfamiliar code. The default slice is outline-first (4k budget, only clearly relevant chunks in full); raise `--budget` when speed matters more than tokens.
 
 Helper: `python3 ~/.claude/skills/jev-orchestrator/scripts/jevpack.py <command>` (run from the project root; packs go to `./.jev/packs/`).
 
 1. **Find the files once.** Grep/Glob yourself, or one `jev-scout`, then write the paths to a file.
 2. **Build:** `jevpack.py build --name <n> --task "<overall task>" --files-from <list>` (or pass paths/globs, or `--grep REGEX`). No model is used; it chunks the files by function/class and takes about 0.1 s. Secrets files are skipped.
-3. **Slice per subtask:** `jevpack.py slice <n> --subtask "<subtask>" --budget 8000 > .jev/packs/<n>-<k>.md`. Jev scores every chunk for this subtask: essential chunks in full with real line numbers, background chunks as one-line outlines, the rest hidden. That's about 3 s and under a cent per slice.
+3. **Slice per subtask:** `jevpack.py slice <n> --subtask "<subtask>" > .jev/packs/<n>-<k>.md` (default budget 4000 tokens). Jev scores every chunk for this subtask: essential chunks in full with real line numbers, background chunks as one-line outlines, the rest hidden. That's about 3 s and under a cent per slice.
 4. **Hand it over by path, not by pasting:** in the subagent prompt write "First Read `<abs path to slice>`; start from it and open other files only if something is missing." That keeps the slice out of your own context.
 5. Give the reviewer a slice too (subtask = "review this change" plus the diff summary).
 

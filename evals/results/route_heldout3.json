@@ -1,0 +1,1552 @@
+{
+  "summary": {
+    "cases": 50,
+    "tier_acceptable": "46/50",
+    "accuracy": 0.92,
+    "tier_choice_acceptable": "49/50",
+    "kept_in_main": 6,
+    "read_tasks_given_edit_tools": "0/17",
+    "ladder_violations": 0,
+    "errors": 0,
+    "latency_ms": {
+      "p50": 1124,
+      "p95": 1208
+    },
+    "misses": [
+      {
+        "task": "Thread a `tenant_id` field from the Absinthe GraphQL input through the Phoenix c",
+        "want": null,
+        "acceptable": [
+          "engineer"
+        ],
+        "got": "architect",
+        "effort": "max"
+      },
+      {
+        "task": "The game's physics gets jittery only when the framerate drops below ~40fps. no i",
+        "want": null,
+        "acceptable": [
+          "debugger"
+        ],
+        "got": "main",
+        "effort": "xhigh"
+      },
+      {
+        "task": "Add a `--dry-run` option to the Ansible deploy: a var in group_vars/all.yml and ",
+        "want": null,
+        "acceptable": [
+          "engineer"
+        ],
+        "got": "main",
+        "effort": "high"
+      },
+      {
+        "task": "Proration for mid-cycle plan upgrades in the billing service overcharges custome",
+        "want": null,
+        "acceptable": [
+          "architect"
+        ],
+        "got": "main",
+        "effort": "max"
+      }
+    ]
+  },
+  "rows": [
+    {
+      "task": "where's the Ecto repo config for the test env in our Phoenix app?",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "scout"
+      ],
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1159,
+      "depth": 0.12,
+      "breadth": 0.36,
+      "signals": {
+        "self_contained": 0.85,
+        "read_only": 0.95,
+        "high_stakes": 0.49,
+        "unknown_cause": 0.39,
+        "design": 0.04,
+        "batchable": 0.51,
+        "exhaustive": 0.04
+      },
+      "reasons": []
+    },
+    {
+      "task": "Rename `UserProfile` to `Account` across the whole Kotlin Android codebase: classes, files, usages, DI bindings. Room table names stay the same.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "engineer",
+      "got_tier": "engineer",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1139,
+      "depth": 1.64,
+      "breadth": 2.99,
+      "signals": {
+        "self_contained": 0.81,
+        "read_only": 0.05,
+        "high_stakes": 0.53,
+        "unknown_cause": 0.02,
+        "design": 0.08,
+        "batchable": 0.68,
+        "exhaustive": 0.94
+      },
+      "reasons": [
+        "multi-part edit -> engineer",
+        "broad but one repeated change -> one engineer instead of a Workflow"
+      ]
+    },
+    {
+      "task": "Stripe webhook handler in our Django app occasionally double-credits a user's wallet. can't repro locally. find it and fix it",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "debugger",
+        "architect"
+      ],
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1142,
+      "depth": 3.0,
+      "breadth": 1.64,
+      "signals": {
+        "self_contained": 0.74,
+        "read_only": 0.11,
+        "high_stakes": 0.96,
+        "unknown_cause": 0.98,
+        "design": 0.22,
+        "batchable": 0.13,
+        "exhaustive": 0.11
+      },
+      "reasons": [
+        "unknown cause -> debugger"
+      ]
+    },
+    {
+      "task": "Walk me through how a LiveView socket gets authenticated end to end in our Phoenix app: mount, on_mount hooks, session plug, token verification, all of it. No changes please.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1146,
+      "depth": 2.07,
+      "breadth": 1.98,
+      "signals": {
+        "self_contained": 0.75,
+        "read_only": 0.94,
+        "high_stakes": 0.77,
+        "unknown_cause": 0.05,
+        "design": 0.05,
+        "batchable": 0.15,
+        "exhaustive": 0.06
+      },
+      "reasons": [
+        "task says not to edit -> read ladder",
+        "read-only, deeper than a lookup -> analyst"
+      ]
+    },
+    {
+      "task": "Bump the default timeout in cmd/sync/flags.go from 30s to 60s",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "builder"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1203,
+      "depth": 0.19,
+      "breadth": 0.0,
+      "signals": {
+        "self_contained": 0.93,
+        "read_only": 0.04,
+        "high_stakes": 0.38,
+        "unknown_cause": 0.02,
+        "design": 0.03,
+        "batchable": 0.91,
+        "exhaustive": 0.04
+      },
+      "reasons": []
+    },
+    {
+      "task": "Should we use Oban or Broadway for background jobs in the Phoenix app? Need retries, cron-style scheduling, ~5k jobs/min. Recommend one and say why.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "architect"
+      ],
+      "got": "architect",
+      "got_tier": "advisor",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1133,
+      "depth": 3.0,
+      "breadth": 1.64,
+      "signals": {
+        "self_contained": 0.84,
+        "read_only": 0.93,
+        "high_stakes": 0.87,
+        "unknown_cause": 0.04,
+        "design": 0.98,
+        "batchable": 0.06,
+        "exhaustive": 0.03
+      },
+      "reasons": [
+        "design question that only needs a recommendation -> advisor (read-only, max)"
+      ]
+    },
+    {
+      "task": "same as before but for the worker module",
+      "ok": true,
+      "ladder": "any",
+      "acceptable": [
+        "main"
+      ],
+      "got": "main",
+      "got_tier": "debugger",
+      "via": "main",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1122,
+      "depth": 1.48,
+      "breadth": 1.97,
+      "signals": {
+        "self_contained": 0.21,
+        "read_only": 0.32,
+        "high_stakes": 0.61,
+        "unknown_cause": 0.28,
+        "design": 0.29,
+        "batchable": 0.51,
+        "exhaustive": 0.23
+      },
+      "reasons": [
+        "moderately high-stakes or small edit -> engineer (high effort)",
+        "low confidence on depth -> engineer escalated to debugger",
+        "not self-contained -> keep in main agent, or pass the needed context in the prompt"
+      ]
+    },
+    {
+      "task": "What version of kotlinx-coroutines does the :app module actually resolve to?",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "scout"
+      ],
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1158,
+      "depth": 0.48,
+      "breadth": 1.44,
+      "signals": {
+        "self_contained": 0.76,
+        "read_only": 0.88,
+        "high_stakes": 0.2,
+        "unknown_cause": 0.84,
+        "design": 0.04,
+        "batchable": 0.39,
+        "exhaustive": 0.05
+      },
+      "reasons": []
+    },
+    {
+      "task": "Our Phoenix test suite fails maybe 1 in 10 CI runs with a DBConnection.OwnershipError somewhere in the notifications tests. Figure out why and fix it.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "debugger"
+      ],
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1122,
+      "depth": 2.98,
+      "breadth": 1.49,
+      "signals": {
+        "self_contained": 0.78,
+        "read_only": 0.09,
+        "high_stakes": 0.39,
+        "unknown_cause": 0.97,
+        "design": 0.19,
+        "batchable": 0.27,
+        "exhaustive": 0.08
+      },
+      "reasons": [
+        "unknown cause -> debugger"
+      ]
+    },
+    {
+      "task": "Thread a `tenant_id` field from the Absinthe GraphQL input through the Phoenix context, the Ecto schema + migration, and into the audit log entries.",
+      "ok": false,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": false,
+      "ladder_ok": true,
+      "ms": 1260,
+      "depth": 2.08,
+      "breadth": 2.58,
+      "signals": {
+        "self_contained": 0.58,
+        "read_only": 0.04,
+        "high_stakes": 0.89,
+        "unknown_cause": 0.05,
+        "design": 0.51,
+        "batchable": 0.53,
+        "exhaustive": 0.19
+      },
+      "reasons": [
+        "high-stakes change with a known approach -> architect",
+        "broad but one flow or question -> one architect instead of a Workflow"
+      ]
+    },
+    {
+      "task": "Fix the typo on the login screen error: 'Invalid pasword' -> 'Invalid password'. It's in res/values/strings.xml.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "builder"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1194,
+      "depth": 0.08,
+      "breadth": 0.0,
+      "signals": {
+        "self_contained": 0.95,
+        "read_only": 0.07,
+        "high_stakes": 0.03,
+        "unknown_cause": 0.03,
+        "design": 0.02,
+        "batchable": 0.94,
+        "exhaustive": 0.04
+      },
+      "reasons": []
+    },
+    {
+      "task": "list every call site of `Renderer::submitDrawCall` in the engine",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "scout"
+      ],
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1087,
+      "depth": 0.01,
+      "breadth": 2.69,
+      "signals": {
+        "self_contained": 0.88,
+        "read_only": 0.95,
+        "high_stakes": 0.12,
+        "unknown_cause": 0.17,
+        "design": 0.03,
+        "batchable": 0.66,
+        "exhaustive": 0.9
+      },
+      "reasons": [
+        "broad but mechanical -> one scout instead of a Workflow"
+      ]
+    },
+    {
+      "task": "Explain how the job scheduler in our C++ engine decides ordering across the physics, animation and render systems. I want to understand the dependency graph before I touch anything.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1124,
+      "depth": 2.83,
+      "breadth": 2.12,
+      "signals": {
+        "self_contained": 0.73,
+        "read_only": 0.93,
+        "high_stakes": 0.37,
+        "unknown_cause": 0.1,
+        "design": 0.08,
+        "batchable": 0.13,
+        "exhaustive": 0.07
+      },
+      "reasons": [
+        "read-only, deeper than a lookup -> analyst"
+      ]
+    },
+    {
+      "task": "We accidentally committed the prod AWS keys in .env two weeks ago and pushed. Need a rotation plan, purge them from git history, and update the deploy config to pull from Secrets Manager.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "architect"
+      ],
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1116,
+      "depth": 2.65,
+      "breadth": 1.88,
+      "signals": {
+        "self_contained": 0.8,
+        "read_only": 0.04,
+        "high_stakes": 0.98,
+        "unknown_cause": 0.04,
+        "design": 0.61,
+        "batchable": 0.09,
+        "exhaustive": 0.5
+      },
+      "reasons": [
+        "design decision -> architect"
+      ]
+    },
+    {
+      "task": "Audit every one of our 14 Go microservices for goroutine leaks and ignored context cancellation, and fix whatever you find in each one.",
+      "ok": true,
+      "ladder": "orchestrate",
+      "acceptable": [
+        "ultracode"
+      ],
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "via": "workflow",
+      "effort": "xhigh",
+      "ladder_got": "orchestrate",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1099,
+      "depth": 2.95,
+      "breadth": 3.0,
+      "signals": {
+        "self_contained": 0.73,
+        "read_only": 0.04,
+        "high_stakes": 0.88,
+        "unknown_cause": 0.67,
+        "design": 0.16,
+        "batchable": 0.13,
+        "exhaustive": 0.98
+      },
+      "reasons": [
+        "unknown cause -> debugger",
+        "breadth 3.00 >= 2.5 -> too broad for one context, orchestrate with Workflow"
+      ]
+    },
+    {
+      "task": "Add a `--json` flag to the `status` subcommand of the Go CLI that just marshals the existing StatusReport struct with encoding/json.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "builder"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1066,
+      "depth": 1.01,
+      "breadth": 0.79,
+      "signals": {
+        "self_contained": 0.83,
+        "read_only": 0.05,
+        "high_stakes": 0.24,
+        "unknown_cause": 0.02,
+        "design": 0.06,
+        "batchable": 0.71,
+        "exhaustive": 0.03
+      },
+      "reasons": []
+    },
+    {
+      "task": "Android app crashes on some Samsung devices after coming back from background. Stack trace points into a Fragment's onViewCreated but nothing obvious. pls investigate + fix",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "debugger"
+      ],
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1156,
+      "depth": 3.0,
+      "breadth": 1.21,
+      "signals": {
+        "self_contained": 0.61,
+        "read_only": 0.1,
+        "high_stakes": 0.42,
+        "unknown_cause": 0.97,
+        "design": 0.19,
+        "batchable": 0.15,
+        "exhaustive": 0.08
+      },
+      "reasons": [
+        "unknown cause -> debugger"
+      ]
+    },
+    {
+      "task": "which dbt models reference the `stg_orders` model? just the names pls",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "scout"
+      ],
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1123,
+      "depth": 0.01,
+      "breadth": 2.18,
+      "signals": {
+        "self_contained": 0.87,
+        "read_only": 0.94,
+        "high_stakes": 0.16,
+        "unknown_cause": 0.14,
+        "design": 0.03,
+        "batchable": 0.74,
+        "exhaustive": 0.24
+      },
+      "reasons": []
+    },
+    {
+      "task": "Can you review how the Solidity vault contract handles reentrancy across deposit / withdraw / flashLoan and tell me if you see any exposure? Report only, do not modify the contracts.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1118,
+      "depth": 3.0,
+      "breadth": 0.89,
+      "signals": {
+        "self_contained": 0.81,
+        "read_only": 0.93,
+        "high_stakes": 0.92,
+        "unknown_cause": 0.77,
+        "design": 0.05,
+        "batchable": 0.13,
+        "exhaustive": 0.32
+      },
+      "reasons": [
+        "task says not to edit -> read ladder",
+        "read-only, deeper than a lookup -> analyst"
+      ]
+    },
+    {
+      "task": "Add structured logging with log/slog to every subcommand in the Go CLI, replacing the log.Printf calls. Same pattern in each command, there are about 20 of them.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "engineer",
+      "got_tier": "engineer",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1155,
+      "depth": 1.89,
+      "breadth": 2.39,
+      "signals": {
+        "self_contained": 0.71,
+        "read_only": 0.03,
+        "high_stakes": 0.37,
+        "unknown_cause": 0.02,
+        "design": 0.13,
+        "batchable": 0.8,
+        "exhaustive": 0.95
+      },
+      "reasons": [
+        "multi-part edit -> engineer"
+      ]
+    },
+    {
+      "task": "Write the migration that splits the `users` table into `users` and `credentials` on production Postgres (40M rows), zero downtime required.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "architect"
+      ],
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1123,
+      "depth": 2.98,
+      "breadth": 1.65,
+      "signals": {
+        "self_contained": 0.59,
+        "read_only": 0.05,
+        "high_stakes": 0.97,
+        "unknown_cause": 0.03,
+        "design": 0.83,
+        "batchable": 0.1,
+        "exhaustive": 0.16
+      },
+      "reasons": [
+        "design decision -> architect"
+      ]
+    },
+    {
+      "task": "The game's physics gets jittery only when the framerate drops below ~40fps. no idea why. fix it",
+      "ok": false,
+      "ladder": "write",
+      "acceptable": [
+        "debugger"
+      ],
+      "got": "main",
+      "got_tier": "debugger",
+      "via": "main",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1139,
+      "depth": 2.98,
+      "breadth": 1.88,
+      "signals": {
+        "self_contained": 0.47,
+        "read_only": 0.09,
+        "high_stakes": 0.12,
+        "unknown_cause": 0.97,
+        "design": 0.68,
+        "batchable": 0.23,
+        "exhaustive": 0.1
+      },
+      "reasons": [
+        "unknown cause -> debugger",
+        "not self-contained -> keep in main agent, or pass the needed context in the prompt"
+      ]
+    },
+    {
+      "task": "In the Django payments app, add a `__str__` to the Refund model that returns the refund id and amount. Nothing else.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "builder"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1117,
+      "depth": 0.77,
+      "breadth": 0.05,
+      "signals": {
+        "self_contained": 0.91,
+        "read_only": 0.04,
+        "high_stakes": 0.15,
+        "unknown_cause": 0.02,
+        "design": 0.04,
+        "batchable": 0.88,
+        "exhaustive": 0.03
+      },
+      "reasons": []
+    },
+    {
+      "task": "how does data flow from the Airflow ingestion DAGs through the dbt staging + mart layers into the finance dashboard tables? map it out for me",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1091,
+      "depth": 2.37,
+      "breadth": 2.93,
+      "signals": {
+        "self_contained": 0.54,
+        "read_only": 0.8,
+        "high_stakes": 0.77,
+        "unknown_cause": 0.06,
+        "design": 0.45,
+        "batchable": 0.15,
+        "exhaustive": 0.09
+      },
+      "reasons": [
+        "read-only, deeper than a lookup -> analyst",
+        "broad but one flow or question -> one analyst instead of a Workflow"
+      ]
+    },
+    {
+      "task": "ok now apply the fix we talked about to the other two",
+      "ok": true,
+      "ladder": "any",
+      "acceptable": [
+        "main"
+      ],
+      "got": "main",
+      "got_tier": "engineer",
+      "via": "main",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1142,
+      "depth": 1.77,
+      "breadth": 1.02,
+      "signals": {
+        "self_contained": 0.11,
+        "read_only": 0.07,
+        "high_stakes": 0.47,
+        "unknown_cause": 0.06,
+        "design": 0.06,
+        "batchable": 0.66,
+        "exhaustive": 0.19
+      },
+      "reasons": [
+        "multi-part edit -> engineer",
+        "not self-contained -> keep in main agent, or pass the needed context in the prompt"
+      ]
+    },
+    {
+      "task": "Where is the JWT signing key loaded from in the Django settings? Don't change anything, I just need the file and line.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "scout"
+      ],
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1098,
+      "depth": 0.15,
+      "breadth": 0.29,
+      "signals": {
+        "self_contained": 0.67,
+        "read_only": 0.96,
+        "high_stakes": 0.52,
+        "unknown_cause": 0.4,
+        "design": 0.03,
+        "batchable": 0.42,
+        "exhaustive": 0.03
+      },
+      "reasons": [
+        "task says not to edit -> read ladder"
+      ]
+    },
+    {
+      "task": "Next.js: switch every page under app/(marketing) from the old `<Header>` to the new `<SiteHeader>` component. Props are identical, it's a straight swap plus imports.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "engineer",
+      "got_tier": "engineer",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1180,
+      "depth": 0.65,
+      "breadth": 1.78,
+      "signals": {
+        "self_contained": 0.86,
+        "read_only": 0.06,
+        "high_stakes": 0.15,
+        "unknown_cause": 0.02,
+        "design": 0.04,
+        "batchable": 0.95,
+        "exhaustive": 0.78
+      },
+      "reasons": [
+        "low confidence on depth -> builder escalated to engineer"
+      ]
+    },
+    {
+      "task": "users randomly get logged out of the iOS app after about a day even though refresh tokens are valid for 30. find the root cause and patch it",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "debugger"
+      ],
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1079,
+      "depth": 2.99,
+      "breadth": 1.84,
+      "signals": {
+        "self_contained": 0.62,
+        "read_only": 0.11,
+        "high_stakes": 0.8,
+        "unknown_cause": 0.97,
+        "design": 0.31,
+        "batchable": 0.2,
+        "exhaustive": 0.1
+      },
+      "reasons": [
+        "unknown cause -> debugger"
+      ]
+    },
+    {
+      "task": "casual q: for the Android app, is it worth moving from Room to SQLDelight given we're going Kotlin Multiplatform next year? pros/cons and your pick",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "architect"
+      ],
+      "got": "architect",
+      "got_tier": "advisor",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1112,
+      "depth": 2.94,
+      "breadth": 2.12,
+      "signals": {
+        "self_contained": 0.81,
+        "read_only": 0.95,
+        "high_stakes": 0.58,
+        "unknown_cause": 0.05,
+        "design": 0.97,
+        "batchable": 0.06,
+        "exhaustive": 0.05
+      },
+      "reasons": [
+        "design question that only needs a recommendation -> advisor (read-only, max)"
+      ]
+    },
+    {
+      "task": "Explain the type-level stuff in our Haskell servant API: the type families in Api/Types.hs and how they connect to the handlers spread across the Handlers/ modules.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1087,
+      "depth": 2.3,
+      "breadth": 1.8,
+      "signals": {
+        "self_contained": 0.79,
+        "read_only": 0.94,
+        "high_stakes": 0.24,
+        "unknown_cause": 0.05,
+        "design": 0.06,
+        "batchable": 0.2,
+        "exhaustive": 0.16
+      },
+      "reasons": [
+        "read-only, deeper than a lookup -> analyst"
+      ]
+    },
+    {
+      "task": "rename the local var `tmp` to `frameBudgetMs` in Profiler.cpp, it's only used inside one function",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "builder"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1187,
+      "depth": 0.1,
+      "breadth": 0.0,
+      "signals": {
+        "self_contained": 0.88,
+        "read_only": 0.05,
+        "high_stakes": 0.07,
+        "unknown_cause": 0.02,
+        "design": 0.03,
+        "batchable": 0.93,
+        "exhaustive": 0.03
+      },
+      "reasons": []
+    },
+    {
+      "task": "Add a `--dry-run` option to the Ansible deploy: a var in group_vars/all.yml and check_mode wired into the app, worker and cron roles. We already agreed on the approach.",
+      "ok": false,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "main",
+      "got_tier": "engineer",
+      "via": "main",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1117,
+      "depth": 1.99,
+      "breadth": 1.62,
+      "signals": {
+        "self_contained": 0.48,
+        "read_only": 0.03,
+        "high_stakes": 0.6,
+        "unknown_cause": 0.02,
+        "design": 0.06,
+        "batchable": 0.8,
+        "exhaustive": 0.11
+      },
+      "reasons": [
+        "moderately high-stakes or small edit -> engineer (high effort)",
+        "not self-contained -> keep in main agent, or pass the needed context in the prompt"
+      ]
+    },
+    {
+      "task": "Haskell service leaks memory slowly over several days. Heap profile shows thunks piling up but we dont know where they come from. Track it down and fix.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "debugger"
+      ],
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1133,
+      "depth": 3.0,
+      "breadth": 2.55,
+      "signals": {
+        "self_contained": 0.65,
+        "read_only": 0.11,
+        "high_stakes": 0.78,
+        "unknown_cause": 0.98,
+        "design": 0.38,
+        "batchable": 0.13,
+        "exhaustive": 0.16
+      },
+      "reasons": [
+        "unknown cause -> debugger",
+        "broad but one flow or question -> one debugger instead of a Workflow"
+      ]
+    },
+    {
+      "task": "quick q - what Go version does go.mod declare for the cli?",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "scout"
+      ],
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1113,
+      "depth": 0.0,
+      "breadth": 0.05,
+      "signals": {
+        "self_contained": 0.83,
+        "read_only": 0.97,
+        "high_stakes": 0.1,
+        "unknown_cause": 0.08,
+        "design": 0.02,
+        "batchable": 0.61,
+        "exhaustive": 0.03
+      },
+      "reasons": []
+    },
+    {
+      "task": "Implement the upgrade for our deployed Solidity token (UUPS proxy) to add a pause() function. The proxy currently holds about $3M.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "architect"
+      ],
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1290,
+      "depth": 2.63,
+      "breadth": 1.14,
+      "signals": {
+        "self_contained": 0.55,
+        "read_only": 0.04,
+        "high_stakes": 0.97,
+        "unknown_cause": 0.03,
+        "design": 0.32,
+        "batchable": 0.2,
+        "exhaustive": 0.09
+      },
+      "reasons": [
+        "high-stakes change with a known approach -> architect"
+      ]
+    },
+    {
+      "task": "Migrate all services in the monorepo off our in-house config library: Elixir services to runtime.exs, Go services to viper, Python ones to pydantic-settings. Each service has its own quirks and env var conventions.",
+      "ok": true,
+      "ladder": "orchestrate",
+      "acceptable": [
+        "ultracode"
+      ],
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "via": "workflow",
+      "effort": "max",
+      "ladder_got": "orchestrate",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1111,
+      "depth": 2.43,
+      "breadth": 3.0,
+      "signals": {
+        "self_contained": 0.56,
+        "read_only": 0.04,
+        "high_stakes": 0.92,
+        "unknown_cause": 0.03,
+        "design": 0.17,
+        "batchable": 0.07,
+        "exhaustive": 0.97
+      },
+      "reasons": [
+        "high-stakes change with a known approach -> architect",
+        "breadth 3.00 >= 2.5 -> too broad for one context, orchestrate with Workflow"
+      ]
+    },
+    {
+      "task": "I'm new to the Android codebase. Give me a tour of how navigation, Hilt DI and the repository layer fit together across the feature modules.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1152,
+      "depth": 2.27,
+      "breadth": 2.96,
+      "signals": {
+        "self_contained": 0.77,
+        "read_only": 0.93,
+        "high_stakes": 0.21,
+        "unknown_cause": 0.03,
+        "design": 0.11,
+        "batchable": 0.11,
+        "exhaustive": 0.13
+      },
+      "reasons": [
+        "read-only, deeper than a lookup -> analyst",
+        "broad but one flow or question -> one analyst instead of a Workflow"
+      ]
+    },
+    {
+      "task": "Add a not_null test on `customer_id` in the orders mart schema.yml",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "builder"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1162,
+      "depth": 0.79,
+      "breadth": 0.04,
+      "signals": {
+        "self_contained": 0.85,
+        "read_only": 0.04,
+        "high_stakes": 0.3,
+        "unknown_cause": 0.04,
+        "design": 0.05,
+        "batchable": 0.83,
+        "exhaustive": 0.04
+      },
+      "reasons": []
+    },
+    {
+      "task": "- convert the 3 SwiftUI settings screens from ObservableObject to @Observable\n- update their view model tests\n- nothing else",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "engineer",
+      "got_tier": "engineer",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1116,
+      "depth": 1.93,
+      "breadth": 1.42,
+      "signals": {
+        "self_contained": 0.74,
+        "read_only": 0.02,
+        "high_stakes": 0.12,
+        "unknown_cause": 0.02,
+        "design": 0.06,
+        "batchable": 0.75,
+        "exhaustive": 0.15
+      },
+      "reasons": [
+        "multi-part edit -> engineer"
+      ]
+    },
+    {
+      "task": "the airflow DAG `daily_rollup` sometimes produces counts ~2% lower than the source tables. no errors in the logs. find out why and fix",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "debugger"
+      ],
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1130,
+      "depth": 3.0,
+      "breadth": 1.31,
+      "signals": {
+        "self_contained": 0.73,
+        "read_only": 0.19,
+        "high_stakes": 0.78,
+        "unknown_cause": 0.98,
+        "design": 0.36,
+        "batchable": 0.22,
+        "exhaustive": 0.07
+      },
+      "reasons": [
+        "unknown cause -> debugger"
+      ]
+    },
+    {
+      "task": "Proration for mid-cycle plan upgrades in the billing service overcharges customers. Decide the rounding and proration rules we should use and implement them.",
+      "ok": false,
+      "ladder": "write",
+      "acceptable": [
+        "architect"
+      ],
+      "got": "main",
+      "got_tier": "architect",
+      "via": "main",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1131,
+      "depth": 2.87,
+      "breadth": 1.79,
+      "signals": {
+        "self_contained": 0.45,
+        "read_only": 0.07,
+        "high_stakes": 0.93,
+        "unknown_cause": 0.18,
+        "design": 0.91,
+        "batchable": 0.15,
+        "exhaustive": 0.12
+      },
+      "reasons": [
+        "design decision -> architect",
+        "not self-contained -> keep in main agent, or pass the needed context in the prompt"
+      ]
+    },
+    {
+      "task": "find the ansible role that installs nginx",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "scout"
+      ],
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1105,
+      "depth": 0.09,
+      "breadth": 1.34,
+      "signals": {
+        "self_contained": 0.79,
+        "read_only": 0.92,
+        "high_stakes": 0.63,
+        "unknown_cause": 0.13,
+        "design": 0.06,
+        "batchable": 0.44,
+        "exhaustive": 0.05
+      },
+      "reasons": []
+    },
+    {
+      "task": "Why does the SwiftUI feed re-render every row when a single like count changes? Just explain the observation chain across the views and models, I'll fix it myself.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1107,
+      "depth": 2.43,
+      "breadth": 1.43,
+      "signals": {
+        "self_contained": 0.67,
+        "read_only": 0.91,
+        "high_stakes": 0.07,
+        "unknown_cause": 0.79,
+        "design": 0.06,
+        "batchable": 0.39,
+        "exhaustive": 0.04
+      },
+      "reasons": [
+        "task says not to edit -> read ladder",
+        "read-only, deeper than a lookup -> analyst"
+      ]
+    },
+    {
+      "task": "We're adding a `currency` column to the dbt revenue models. Add it in staging, carry it through the int_ and mart models, and update the schema.yml docs and tests.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "engineer",
+      "got_tier": "engineer",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1098,
+      "depth": 1.99,
+      "breadth": 1.93,
+      "signals": {
+        "self_contained": 0.68,
+        "read_only": 0.02,
+        "high_stakes": 0.6,
+        "unknown_cause": 0.02,
+        "design": 0.13,
+        "batchable": 0.75,
+        "exhaustive": 0.22
+      },
+      "reasons": [
+        "moderately high-stakes or small edit -> engineer (high effort)"
+      ]
+    },
+    {
+      "task": "The Phoenix /healthz route should return JSON {\"status\": \"ok\"} instead of plain text. it's one controller action",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "builder"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1097,
+      "depth": 0.91,
+      "breadth": 0.04,
+      "signals": {
+        "self_contained": 0.82,
+        "read_only": 0.1,
+        "high_stakes": 0.22,
+        "unknown_cause": 0.08,
+        "design": 0.09,
+        "batchable": 0.76,
+        "exhaustive": 0.03
+      },
+      "reasons": []
+    },
+    {
+      "task": "Change the replication on our live prod Postgres cluster from async to synchronous via the Ansible db role. Plan it and write the playbook changes.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "architect"
+      ],
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1095,
+      "depth": 2.58,
+      "breadth": 1.63,
+      "signals": {
+        "self_contained": 0.52,
+        "read_only": 0.04,
+        "high_stakes": 0.96,
+        "unknown_cause": 0.03,
+        "design": 0.42,
+        "batchable": 0.13,
+        "exhaustive": 0.16
+      },
+      "reasons": [
+        "high-stakes change with a known approach -> architect"
+      ]
+    },
+    {
+      "task": "Undo the last change you suggested and go with option B instead",
+      "ok": true,
+      "ladder": "any",
+      "acceptable": [
+        "main"
+      ],
+      "got": "main",
+      "got_tier": "engineer",
+      "via": "main",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1208,
+      "depth": 0.79,
+      "breadth": 0.26,
+      "signals": {
+        "self_contained": 0.1,
+        "read_only": 0.33,
+        "high_stakes": 0.3,
+        "unknown_cause": 0.04,
+        "design": 0.18,
+        "batchable": 0.45,
+        "exhaustive": 0.04
+      },
+      "reasons": [
+        "low confidence on depth -> builder escalated to engineer",
+        "not self-contained -> keep in main agent, or pass the needed context in the prompt"
+      ]
+    },
+    {
+      "task": "Replace every raw new/delete of `Texture` in the asset loader, material system and UI atlas with std::unique_ptr<Texture>. Ownership rules are already written up in OWNERSHIP.md.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "engineer",
+      "got_tier": "engineer",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1152,
+      "depth": 1.99,
+      "breadth": 2.29,
+      "signals": {
+        "self_contained": 0.71,
+        "read_only": 0.03,
+        "high_stakes": 0.59,
+        "unknown_cause": 0.02,
+        "design": 0.07,
+        "batchable": 0.51,
+        "exhaustive": 0.91
+      },
+      "reasons": [
+        "multi-part edit -> engineer"
+      ]
+    },
+    {
+      "task": "summarize how secrets get from Vault into the ansible playbooks and onto the hosts: which roles, which vars, where they get templated. this is for an audit doc, no edits",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1184,
+      "depth": 1.91,
+      "breadth": 2.39,
+      "signals": {
+        "self_contained": 0.67,
+        "read_only": 0.92,
+        "high_stakes": 0.62,
+        "unknown_cause": 0.06,
+        "design": 0.05,
+        "batchable": 0.22,
+        "exhaustive": 0.24
+      },
+      "reasons": [
+        "read-only, deeper than a lookup -> analyst"
+      ]
+    },
+    {
+      "task": "Go through all the dbt projects, the Airflow DAGs, and the Django reporting app and find + fix every place doing timezone-naive datetime math.",
+      "ok": true,
+      "ladder": "orchestrate",
+      "acceptable": [
+        "ultracode"
+      ],
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "via": "workflow",
+      "effort": "high",
+      "ladder_got": "orchestrate",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1184,
+      "depth": 2.32,
+      "breadth": 3.0,
+      "signals": {
+        "self_contained": 0.72,
+        "read_only": 0.05,
+        "high_stakes": 0.82,
+        "unknown_cause": 0.24,
+        "design": 0.18,
+        "batchable": 0.17,
+        "exhaustive": 0.97
+      },
+      "reasons": [
+        "moderately high-stakes or small edit -> engineer (high effort)",
+        "breadth 3.00 >= 2.5 -> too broad for one context, orchestrate with Workflow"
+      ]
+    }
+  ],
+  "generated": "2026-09-25 07:45:51"
+}

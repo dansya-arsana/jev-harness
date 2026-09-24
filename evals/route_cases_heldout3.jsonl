@@ -1,0 +1,50 @@
+{"task": "where's the Ecto repo config for the test env in our Phoenix app?", "ok": ["scout"], "ladder": "read"}
+{"task": "Rename `UserProfile` to `Account` across the whole Kotlin Android codebase: classes, files, usages, DI bindings. Room table names stay the same.", "ok": ["engineer"], "ladder": "write"}
+{"task": "Stripe webhook handler in our Django app occasionally double-credits a user's wallet. can't repro locally. find it and fix it", "ok": ["debugger", "architect"], "ladder": "write"}
+{"task": "Walk me through how a LiveView socket gets authenticated end to end in our Phoenix app: mount, on_mount hooks, session plug, token verification, all of it. No changes please.", "ok": ["analyst"], "ladder": "read"}
+{"task": "Bump the default timeout in cmd/sync/flags.go from 30s to 60s", "ok": ["builder"], "ladder": "write"}
+{"task": "Should we use Oban or Broadway for background jobs in the Phoenix app? Need retries, cron-style scheduling, ~5k jobs/min. Recommend one and say why.", "ok": ["architect"], "ladder": "read"}
+{"task": "same as before but for the worker module", "ok": ["main"], "ladder": "any"}
+{"task": "What version of kotlinx-coroutines does the :app module actually resolve to?", "ok": ["scout"], "ladder": "read"}
+{"task": "Our Phoenix test suite fails maybe 1 in 10 CI runs with a DBConnection.OwnershipError somewhere in the notifications tests. Figure out why and fix it.", "ok": ["debugger"], "ladder": "write"}
+{"task": "Thread a `tenant_id` field from the Absinthe GraphQL input through the Phoenix context, the Ecto schema + migration, and into the audit log entries.", "ok": ["engineer"], "ladder": "write"}
+{"task": "Fix the typo on the login screen error: 'Invalid pasword' -> 'Invalid password'. It's in res/values/strings.xml.", "ok": ["builder"], "ladder": "write"}
+{"task": "list every call site of `Renderer::submitDrawCall` in the engine", "ok": ["scout"], "ladder": "read"}
+{"task": "Explain how the job scheduler in our C++ engine decides ordering across the physics, animation and render systems. I want to understand the dependency graph before I touch anything.", "ok": ["analyst"], "ladder": "read"}
+{"task": "We accidentally committed the prod AWS keys in .env two weeks ago and pushed. Need a rotation plan, purge them from git history, and update the deploy config to pull from Secrets Manager.", "ok": ["architect"], "ladder": "write"}
+{"task": "Audit every one of our 14 Go microservices for goroutine leaks and ignored context cancellation, and fix whatever you find in each one.", "ok": ["ultracode"], "ladder": "orchestrate"}
+{"task": "Add a `--json` flag to the `status` subcommand of the Go CLI that just marshals the existing StatusReport struct with encoding/json.", "ok": ["builder"], "ladder": "write"}
+{"task": "Android app crashes on some Samsung devices after coming back from background. Stack trace points into a Fragment's onViewCreated but nothing obvious. pls investigate + fix", "ok": ["debugger"], "ladder": "write"}
+{"task": "which dbt models reference the `stg_orders` model? just the names pls", "ok": ["scout"], "ladder": "read"}
+{"task": "Can you review how the Solidity vault contract handles reentrancy across deposit / withdraw / flashLoan and tell me if you see any exposure? Report only, do not modify the contracts.", "ok": ["analyst"], "ladder": "read"}
+{"task": "Add structured logging with log/slog to every subcommand in the Go CLI, replacing the log.Printf calls. Same pattern in each command, there are about 20 of them.", "ok": ["engineer"], "ladder": "write"}
+{"task": "Write the migration that splits the `users` table into `users` and `credentials` on production Postgres (40M rows), zero downtime required.", "ok": ["architect"], "ladder": "write"}
+{"task": "The game's physics gets jittery only when the framerate drops below ~40fps. no idea why. fix it", "ok": ["debugger"], "ladder": "write"}
+{"task": "In the Django payments app, add a `__str__` to the Refund model that returns the refund id and amount. Nothing else.", "ok": ["builder"], "ladder": "write"}
+{"task": "how does data flow from the Airflow ingestion DAGs through the dbt staging + mart layers into the finance dashboard tables? map it out for me", "ok": ["analyst"], "ladder": "read"}
+{"task": "ok now apply the fix we talked about to the other two", "ok": ["main"], "ladder": "any"}
+{"task": "Where is the JWT signing key loaded from in the Django settings? Don't change anything, I just need the file and line.", "ok": ["scout"], "ladder": "read"}
+{"task": "Next.js: switch every page under app/(marketing) from the old `<Header>` to the new `<SiteHeader>` component. Props are identical, it's a straight swap plus imports.", "ok": ["engineer"], "ladder": "write"}
+{"task": "users randomly get logged out of the iOS app after about a day even though refresh tokens are valid for 30. find the root cause and patch it", "ok": ["debugger"], "ladder": "write"}
+{"task": "casual q: for the Android app, is it worth moving from Room to SQLDelight given we're going Kotlin Multiplatform next year? pros/cons and your pick", "ok": ["architect"], "ladder": "read"}
+{"task": "Explain the type-level stuff in our Haskell servant API: the type families in Api/Types.hs and how they connect to the handlers spread across the Handlers/ modules.", "ok": ["analyst"], "ladder": "read"}
+{"task": "rename the local var `tmp` to `frameBudgetMs` in Profiler.cpp, it's only used inside one function", "ok": ["builder"], "ladder": "write"}
+{"task": "Add a `--dry-run` option to the Ansible deploy: a var in group_vars/all.yml and check_mode wired into the app, worker and cron roles. We already agreed on the approach.", "ok": ["engineer"], "ladder": "write"}
+{"task": "Haskell service leaks memory slowly over several days. Heap profile shows thunks piling up but we dont know where they come from. Track it down and fix.", "ok": ["debugger"], "ladder": "write"}
+{"task": "quick q - what Go version does go.mod declare for the cli?", "ok": ["scout"], "ladder": "read"}
+{"task": "Implement the upgrade for our deployed Solidity token (UUPS proxy) to add a pause() function. The proxy currently holds about $3M.", "ok": ["architect"], "ladder": "write"}
+{"task": "Migrate all services in the monorepo off our in-house config library: Elixir services to runtime.exs, Go services to viper, Python ones to pydantic-settings. Each service has its own quirks and env var conventions.", "ok": ["ultracode"], "ladder": "orchestrate"}
+{"task": "I'm new to the Android codebase. Give me a tour of how navigation, Hilt DI and the repository layer fit together across the feature modules.", "ok": ["analyst"], "ladder": "read"}
+{"task": "Add a not_null test on `customer_id` in the orders mart schema.yml", "ok": ["builder"], "ladder": "write"}
+{"task": "- convert the 3 SwiftUI settings screens from ObservableObject to @Observable\n- update their view model tests\n- nothing else", "ok": ["engineer"], "ladder": "write"}
+{"task": "the airflow DAG `daily_rollup` sometimes produces counts ~2% lower than the source tables. no errors in the logs. find out why and fix", "ok": ["debugger"], "ladder": "write"}
+{"task": "Proration for mid-cycle plan upgrades in the billing service overcharges customers. Decide the rounding and proration rules we should use and implement them.", "ok": ["architect"], "ladder": "write"}
+{"task": "find the ansible role that installs nginx", "ok": ["scout"], "ladder": "read"}
+{"task": "Why does the SwiftUI feed re-render every row when a single like count changes? Just explain the observation chain across the views and models, I'll fix it myself.", "ok": ["analyst"], "ladder": "read"}
+{"task": "We're adding a `currency` column to the dbt revenue models. Add it in staging, carry it through the int_ and mart models, and update the schema.yml docs and tests.", "ok": ["engineer"], "ladder": "write"}
+{"task": "The Phoenix /healthz route should return JSON {\"status\": \"ok\"} instead of plain text. it's one controller action", "ok": ["builder"], "ladder": "write"}
+{"task": "Change the replication on our live prod Postgres cluster from async to synchronous via the Ansible db role. Plan it and write the playbook changes.", "ok": ["architect"], "ladder": "write"}
+{"task": "Undo the last change you suggested and go with option B instead", "ok": ["main"], "ladder": "any"}
+{"task": "Replace every raw new/delete of `Texture` in the asset loader, material system and UI atlas with std::unique_ptr<Texture>. Ownership rules are already written up in OWNERSHIP.md.", "ok": ["engineer"], "ladder": "write"}
+{"task": "summarize how secrets get from Vault into the ansible playbooks and onto the hosts: which roles, which vars, where they get templated. this is for an audit doc, no edits", "ok": ["analyst"], "ladder": "read"}
+{"task": "Go through all the dbt projects, the Airflow DAGs, and the Django reporting app and find + fix every place doing timezone-naive datetime math.", "ok": ["ultracode"], "ladder": "orchestrate"}

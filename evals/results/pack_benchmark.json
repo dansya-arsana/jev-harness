@@ -160,5 +160,117 @@
       "verdict": "equal"
     },
     "factual_errors": 0
+  },
+  "runs_v2_outline_first": [
+    {
+      "question": "Q1 parameter value resolution order",
+      "without": {
+        "tokens": 15462,
+        "tools": 3,
+        "ms": 17123
+      },
+      "with": {
+        "tokens": 17299,
+        "tools": 2,
+        "ms": 14371
+      },
+      "slice_bytes": 13581,
+      "slice": {
+        "full": 9,
+        "outline": 76,
+        "slice_tokens_est": 1600
+      }
+    },
+    {
+      "question": "Q2 group subcommand dispatch and chaining",
+      "without": {
+        "tokens": 16994,
+        "tools": 5,
+        "ms": 22817
+      },
+      "with": {
+        "tokens": 18123,
+        "tools": 2,
+        "ms": 15467
+      },
+      "slice_bytes": 13739,
+      "slice": {
+        "full": 5,
+        "outline": 69,
+        "slice_tokens_est": 1727
+      }
+    },
+    {
+      "question": "Q3 shell completion detection and candidates",
+      "without": {
+        "tokens": 17319,
+        "tools": 4,
+        "ms": 27647
+      },
+      "with": {
+        "tokens": 21621,
+        "tools": 3,
+        "ms": 18661
+      },
+      "slice_bytes": 22882,
+      "slice": {
+        "full": 14,
+        "outline": 50,
+        "slice_tokens_est": 3906
+      }
+    }
+  ],
+  "blind_grading_v2": {
+    "label_map": {
+      "Q1": {
+        "A": "with_v2",
+        "B": "without"
+      },
+      "Q2": {
+        "A": "without",
+        "B": "with_v2"
+      },
+      "Q3": {
+        "A": "with_v2",
+        "B": "without"
+      }
+    },
+    "Q1": {
+      "with_v2": {
+        "score": 9,
+        "citations": "15/15"
+      },
+      "without": {
+        "score": 8,
+        "citations": "15/15"
+      },
+      "verdict": "equal"
+    },
+    "Q2": {
+      "with_v2": {
+        "score": 9,
+        "citations": "14/14"
+      },
+      "without": {
+        "score": 9,
+        "citations": "16/16"
+      },
+      "verdict": "equal"
+    },
+    "Q3": {
+      "with_v2": {
+        "score": 9,
+        "citations": "17/17"
+      },
+      "without": {
+        "score": 8,
+        "citations": "11/11"
+      },
+      "verdict": "equal"
+    },
+    "minor_imprecisions": {
+      "with_v2": 1,
+      "without": 2
+    }
   }
 }

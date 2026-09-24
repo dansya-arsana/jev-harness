@@ -1,0 +1,1245 @@
+{
+  "summary": {
+    "cases": 40,
+    "tier_acceptable": "37/40",
+    "accuracy": 0.925,
+    "tier_choice_acceptable": "38/40",
+    "kept_in_main": 3,
+    "read_tasks_given_edit_tools": "0/12",
+    "ladder_violations": 0,
+    "errors": 0,
+    "latency_ms": {
+      "p50": 1173,
+      "p95": 1255
+    },
+    "misses": [
+      {
+        "task": "Rename CustomerAccount to Account everywhere in the Rails app: models, controlle",
+        "want": null,
+        "acceptable": [
+          "engineer"
+        ],
+        "got": "builder",
+        "effort": "medium"
+      },
+      {
+        "task": "Thread a tenant_id field from the gRPC request proto through the handler, servic",
+        "want": null,
+        "acceptable": [
+          "engineer"
+        ],
+        "got": "architect",
+        "effort": "max"
+      },
+      {
+        "task": "We're dropping Moment.js for date-fns in the React frontend. The function mappin",
+        "want": null,
+        "acceptable": [
+          "engineer"
+        ],
+        "got": "main",
+        "effort": "high"
+      }
+    ]
+  },
+  "rows": [
+    {
+      "task": "Where is the Stripe webhook signature verified in this Rails app? Just point me to the file and line.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "scout"
+      ],
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1142,
+      "depth": 0.32,
+      "breadth": 1.08,
+      "signals": {
+        "self_contained": 0.84,
+        "read_only": 0.96,
+        "high_stakes": 0.86,
+        "unknown_cause": 0.35,
+        "design": 0.03,
+        "batchable": 0.36,
+        "exhaustive": 0.05
+      },
+      "reasons": []
+    },
+    {
+      "task": "what version of tokio are we pinned to in the workspace Cargo.toml",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "scout"
+      ],
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1134,
+      "depth": 0.0,
+      "breadth": 0.03,
+      "signals": {
+        "self_contained": 0.91,
+        "read_only": 0.97,
+        "high_stakes": 0.21,
+        "unknown_cause": 0.08,
+        "design": 0.02,
+        "batchable": 0.71,
+        "exhaustive": 0.04
+      },
+      "reasons": []
+    },
+    {
+      "task": "List every call site of UserRepository.findByEmail in the Spring Boot service.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "scout"
+      ],
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1136,
+      "depth": 0.01,
+      "breadth": 2.02,
+      "signals": {
+        "self_contained": 0.82,
+        "read_only": 0.95,
+        "high_stakes": 0.2,
+        "unknown_cause": 0.11,
+        "design": 0.04,
+        "batchable": 0.65,
+        "exhaustive": 0.67
+      },
+      "reasons": []
+    },
+    {
+      "task": "Which Terraform module defines the prod RDS instance?",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "scout"
+      ],
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1157,
+      "depth": 0.2,
+      "breadth": 1.77,
+      "signals": {
+        "self_contained": 0.65,
+        "read_only": 0.91,
+        "high_stakes": 0.66,
+        "unknown_cause": 0.22,
+        "design": 0.05,
+        "batchable": 0.41,
+        "exhaustive": 0.04
+      },
+      "reasons": []
+    },
+    {
+      "task": "hey quick one - in the Unity project, which script on the Player prefab handles input?",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "scout"
+      ],
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1225,
+      "depth": 0.05,
+      "breadth": 0.37,
+      "signals": {
+        "self_contained": 0.76,
+        "read_only": 0.93,
+        "high_stakes": 0.09,
+        "unknown_cause": 0.17,
+        "design": 0.03,
+        "batchable": 0.43,
+        "exhaustive": 0.03
+      },
+      "reasons": []
+    },
+    {
+      "task": "Where does the auth service read the JWT signing secret from the environment? Don't change anything, I just need the location.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "scout"
+      ],
+      "got": "scout",
+      "got_tier": "scout",
+      "via": "subagent",
+      "effort": "low",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1204,
+      "depth": 0.14,
+      "breadth": 1.06,
+      "signals": {
+        "self_contained": 0.76,
+        "read_only": 0.96,
+        "high_stakes": 0.55,
+        "unknown_cause": 0.42,
+        "design": 0.03,
+        "batchable": 0.36,
+        "exhaustive": 0.04
+      },
+      "reasons": [
+        "task says not to edit -> read ladder"
+      ]
+    },
+    {
+      "task": "Explain how a refund flows from the admin dashboard through to the Adyen API and back into our ledger tables. No changes please, I need to understand it before the PCI audit.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1209,
+      "depth": 2.22,
+      "breadth": 2.66,
+      "signals": {
+        "self_contained": 0.64,
+        "read_only": 0.89,
+        "high_stakes": 0.73,
+        "unknown_cause": 0.06,
+        "design": 0.05,
+        "batchable": 0.16,
+        "exhaustive": 0.06
+      },
+      "reasons": [
+        "task says not to edit -> read ladder",
+        "read-only, deeper than a lookup -> analyst",
+        "broad but one flow or question -> one analyst instead of a Workflow"
+      ]
+    },
+    {
+      "task": "Walk me through how the Flutter app's offline sync works end to end: the local queue, conflict handling, and retry/backoff across the repository and data layers.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1211,
+      "depth": 2.87,
+      "breadth": 2.58,
+      "signals": {
+        "self_contained": 0.58,
+        "read_only": 0.91,
+        "high_stakes": 0.81,
+        "unknown_cause": 0.06,
+        "design": 0.15,
+        "batchable": 0.13,
+        "exhaustive": 0.11
+      },
+      "reasons": [
+        "read-only, deeper than a lookup -> analyst",
+        "broad but one flow or question -> one analyst instead of a Workflow"
+      ]
+    },
+    {
+      "task": "Why does our PyTorch training pipeline use two different tokenizers? Trace where each one is used across preprocessing, training and inference, and summarize the implications.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1205,
+      "depth": 2.63,
+      "breadth": 2.59,
+      "signals": {
+        "self_contained": 0.67,
+        "read_only": 0.88,
+        "high_stakes": 0.32,
+        "unknown_cause": 0.24,
+        "design": 0.07,
+        "batchable": 0.16,
+        "exhaustive": 0.25
+      },
+      "reasons": [
+        "read-only, deeper than a lookup -> analyst",
+        "broad but one flow or question -> one analyst instead of a Workflow"
+      ]
+    },
+    {
+      "task": "Can you map out how OAuth scopes get enforced across the API gateway, the middleware and the individual controllers? Read-only, I'm writing internal docs.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1210,
+      "depth": 2.59,
+      "breadth": 2.58,
+      "signals": {
+        "self_contained": 0.7,
+        "read_only": 0.84,
+        "high_stakes": 0.8,
+        "unknown_cause": 0.06,
+        "design": 0.42,
+        "batchable": 0.19,
+        "exhaustive": 0.28
+      },
+      "reasons": [
+        "task says not to edit -> read ladder",
+        "read-only, deeper than a lookup -> analyst",
+        "broad but one flow or question -> one analyst instead of a Workflow"
+      ]
+    },
+    {
+      "task": "Review how the STM32 firmware's interrupt handlers share state with the main loop and write up any spots that rely on implicit ordering or missing volatile/critical sections. Don't fix anything yet.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1218,
+      "depth": 3.0,
+      "breadth": 2.14,
+      "signals": {
+        "self_contained": 0.84,
+        "read_only": 0.68,
+        "high_stakes": 0.82,
+        "unknown_cause": 0.71,
+        "design": 0.08,
+        "batchable": 0.16,
+        "exhaustive": 0.57
+      },
+      "reasons": [
+        "task says not to edit -> read ladder",
+        "read-only, deeper than a lookup -> analyst"
+      ]
+    },
+    {
+      "task": "Summarize the dependency graph between our Terraform modules and explain which stacks would be affected if we changed the VPC CIDR.",
+      "ok": true,
+      "ladder": "read",
+      "acceptable": [
+        "analyst"
+      ],
+      "got": "analyst",
+      "got_tier": "analyst",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "read",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1175,
+      "depth": 2.19,
+      "breadth": 2.77,
+      "signals": {
+        "self_contained": 0.72,
+        "read_only": 0.91,
+        "high_stakes": 0.82,
+        "unknown_cause": 0.09,
+        "design": 0.08,
+        "batchable": 0.25,
+        "exhaustive": 0.18
+      },
+      "reasons": [
+        "read-only, deeper than a lookup -> analyst",
+        "broad but one flow or question -> one analyst instead of a Workflow"
+      ]
+    },
+    {
+      "task": "Bump the default page size in app/controllers/api/v1/orders_controller.rb from 25 to 50.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "builder"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1173,
+      "depth": 0.21,
+      "breadth": 0.01,
+      "signals": {
+        "self_contained": 0.89,
+        "read_only": 0.04,
+        "high_stakes": 0.4,
+        "unknown_cause": 0.02,
+        "design": 0.03,
+        "batchable": 0.89,
+        "exhaustive": 0.04
+      },
+      "reasons": []
+    },
+    {
+      "task": "typo in src/config.rs error message: 'recieved' -> 'received'",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "builder"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1172,
+      "depth": 0.11,
+      "breadth": 0.0,
+      "signals": {
+        "self_contained": 0.94,
+        "read_only": 0.24,
+        "high_stakes": 0.03,
+        "unknown_cause": 0.03,
+        "design": 0.02,
+        "batchable": 0.94,
+        "exhaustive": 0.04
+      },
+      "reasons": []
+    },
+    {
+      "task": "Add a toString() override to the Invoice DTO in the Spring project that prints id, amount and status.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "builder"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1135,
+      "depth": 0.9,
+      "breadth": 0.01,
+      "signals": {
+        "self_contained": 0.88,
+        "read_only": 0.04,
+        "high_stakes": 0.27,
+        "unknown_cause": 0.02,
+        "design": 0.06,
+        "batchable": 0.85,
+        "exhaustive": 0.03
+      },
+      "reasons": []
+    },
+    {
+      "task": "In the Flutter settings screen, make the logout button red and show a confirmation dialog before it actually logs out.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "builder"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1118,
+      "depth": 1.18,
+      "breadth": 0.56,
+      "signals": {
+        "self_contained": 0.78,
+        "read_only": 0.04,
+        "high_stakes": 0.33,
+        "unknown_cause": 0.03,
+        "design": 0.12,
+        "batchable": 0.31,
+        "exhaustive": 0.04
+      },
+      "reasons": []
+    },
+    {
+      "task": "add a --dry-run flag to scripts/prune_checkpoints.py that prints what would be deleted instead of deleting it",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "builder"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1256,
+      "depth": 1.0,
+      "breadth": 0.01,
+      "signals": {
+        "self_contained": 0.9,
+        "read_only": 0.04,
+        "high_stakes": 0.33,
+        "unknown_cause": 0.02,
+        "design": 0.12,
+        "batchable": 0.71,
+        "exhaustive": 0.04
+      },
+      "reasons": []
+    },
+    {
+      "task": "The spawn interval in EnemySpawner.cs is hardcoded to 2f. Expose it as a [SerializeField] so designers can tweak it in the inspector.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "builder"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1255,
+      "depth": 0.86,
+      "breadth": 0.01,
+      "signals": {
+        "self_contained": 0.91,
+        "read_only": 0.06,
+        "high_stakes": 0.06,
+        "unknown_cause": 0.03,
+        "design": 0.06,
+        "batchable": 0.86,
+        "exhaustive": 0.04
+      },
+      "reasons": []
+    },
+    {
+      "task": "Rename CustomerAccount to Account everywhere in the Rails app: models, controllers, serializers, specs, factories and the migration-free table alias. It's purely mechanical.",
+      "ok": false,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "builder",
+      "got_tier": "builder",
+      "via": "subagent",
+      "effort": "medium",
+      "ladder_got": "write",
+      "tier_ok": false,
+      "ladder_ok": true,
+      "ms": 1243,
+      "depth": 0.45,
+      "breadth": 2.85,
+      "signals": {
+        "self_contained": 0.83,
+        "read_only": 0.03,
+        "high_stakes": 0.54,
+        "unknown_cause": 0.02,
+        "design": 0.04,
+        "batchable": 0.87,
+        "exhaustive": 0.96
+      },
+      "reasons": [
+        "broad but mechanical -> one builder instead of a Workflow"
+      ]
+    },
+    {
+      "task": "Thread a tenant_id field from the gRPC request proto through the handler, service layer and sqlx repository in the Rust orders service so it's persisted with each order.",
+      "ok": false,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": false,
+      "ladder_ok": true,
+      "ms": 1239,
+      "depth": 2.0,
+      "breadth": 2.01,
+      "signals": {
+        "self_contained": 0.72,
+        "read_only": 0.04,
+        "high_stakes": 0.89,
+        "unknown_cause": 0.04,
+        "design": 0.3,
+        "batchable": 0.73,
+        "exhaustive": 0.12
+      },
+      "reasons": [
+        "high-stakes change with a known approach -> architect"
+      ]
+    },
+    {
+      "task": "Replace every use of the deprecated log.Printf with our structured logger.Info helper across all the Go packages under cmd/ and internal/.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "engineer",
+      "got_tier": "engineer",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1179,
+      "depth": 1.55,
+      "breadth": 2.78,
+      "signals": {
+        "self_contained": 0.72,
+        "read_only": 0.04,
+        "high_stakes": 0.29,
+        "unknown_cause": 0.03,
+        "design": 0.08,
+        "batchable": 0.75,
+        "exhaustive": 0.96
+      },
+      "reasons": [
+        "multi-part edit -> engineer",
+        "broad but one repeated change -> one engineer instead of a Workflow"
+      ]
+    },
+    {
+      "task": "We're dropping Moment.js for date-fns in the React frontend. The function mapping is already in the ticket, please convert all ~40 files that import moment.",
+      "ok": false,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "main",
+      "got_tier": "engineer",
+      "via": "main",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1141,
+      "depth": 1.72,
+      "breadth": 2.82,
+      "signals": {
+        "self_contained": 0.45,
+        "read_only": 0.03,
+        "high_stakes": 0.47,
+        "unknown_cause": 0.02,
+        "design": 0.05,
+        "batchable": 0.69,
+        "exhaustive": 0.92
+      },
+      "reasons": [
+        "multi-part edit -> engineer",
+        "broad but one repeated change -> one engineer instead of a Workflow",
+        "not self-contained -> keep in main agent, or pass the needed context in the prompt"
+      ]
+    },
+    {
+      "task": "Add a `retries` option to the ML pipeline config: parse it from the YAML, pass it into the DataLoader wrapper and the S3 upload step, and document it in the README.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "engineer",
+      "got_tier": "engineer",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1222,
+      "depth": 2.0,
+      "breadth": 1.39,
+      "signals": {
+        "self_contained": 0.73,
+        "read_only": 0.02,
+        "high_stakes": 0.68,
+        "unknown_cause": 0.02,
+        "design": 0.28,
+        "batchable": 0.6,
+        "exhaustive": 0.09
+      },
+      "reasons": [
+        "moderately high-stakes or small edit -> engineer (high effort)"
+      ]
+    },
+    {
+      "task": "Add a /healthz endpoint to the Spring service, point the Kubernetes readiness probe in the Helm chart at it, and add an integration test for it.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "engineer"
+      ],
+      "got": "engineer",
+      "got_tier": "engineer",
+      "via": "subagent",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1124,
+      "depth": 1.99,
+      "breadth": 1.17,
+      "signals": {
+        "self_contained": 0.79,
+        "read_only": 0.02,
+        "high_stakes": 0.72,
+        "unknown_cause": 0.03,
+        "design": 0.18,
+        "batchable": 0.35,
+        "exhaustive": 0.06
+      },
+      "reasons": [
+        "moderately high-stakes or small edit -> engineer (high effort)"
+      ]
+    },
+    {
+      "task": "Upgrade our Terraform modules to AWS provider v5: split the inline acl/versioning blocks on aws_s3_bucket into the separate resources, following the official upgrade guide.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "engineer",
+        "architect"
+      ],
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1128,
+      "depth": 1.77,
+      "breadth": 2.02,
+      "signals": {
+        "self_contained": 0.78,
+        "read_only": 0.06,
+        "high_stakes": 0.87,
+        "unknown_cause": 0.03,
+        "design": 0.08,
+        "batchable": 0.74,
+        "exhaustive": 0.52
+      },
+      "reasons": [
+        "high-stakes change with a known approach -> architect"
+      ]
+    },
+    {
+      "task": "OrderSpec fails roughly 1 in 10 CI runs with 'Deadlock detected' and I can't reproduce it locally. Figure out why and fix it.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "debugger"
+      ],
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1125,
+      "depth": 3.0,
+      "breadth": 1.75,
+      "signals": {
+        "self_contained": 0.67,
+        "read_only": 0.09,
+        "high_stakes": 0.72,
+        "unknown_cause": 0.98,
+        "design": 0.42,
+        "batchable": 0.13,
+        "exhaustive": 0.08
+      },
+      "reasons": [
+        "unknown cause -> debugger"
+      ]
+    },
+    {
+      "task": "Our Rust ingest service's p99 latency spikes every few minutes and nobody knows why. Find the cause and fix it.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "debugger"
+      ],
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1129,
+      "depth": 3.0,
+      "breadth": 2.12,
+      "signals": {
+        "self_contained": 0.61,
+        "read_only": 0.14,
+        "high_stakes": 0.86,
+        "unknown_cause": 0.99,
+        "design": 0.3,
+        "batchable": 0.1,
+        "exhaustive": 0.11
+      },
+      "reasons": [
+        "unknown cause -> debugger"
+      ]
+    },
+    {
+      "task": "The firmware sometimes reads a garbage temperature from the I2C sensor right after waking from sleep. Track it down and fix it.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "debugger"
+      ],
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1115,
+      "depth": 2.97,
+      "breadth": 1.59,
+      "signals": {
+        "self_contained": 0.68,
+        "read_only": 0.09,
+        "high_stakes": 0.36,
+        "unknown_cause": 0.95,
+        "design": 0.19,
+        "batchable": 0.21,
+        "exhaustive": 0.09
+      },
+      "reasons": [
+        "unknown cause -> debugger"
+      ]
+    },
+    {
+      "task": "Eval accuracy dropped from 91% to 84% after last week's merges but nothing obvious changed in the model code. Find what caused the regression and fix it.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "debugger"
+      ],
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1127,
+      "depth": 3.0,
+      "breadth": 2.65,
+      "signals": {
+        "self_contained": 0.69,
+        "read_only": 0.11,
+        "high_stakes": 0.48,
+        "unknown_cause": 0.98,
+        "design": 0.2,
+        "batchable": 0.18,
+        "exhaustive": 0.14
+      },
+      "reasons": [
+        "unknown cause -> debugger",
+        "broad but one flow or question -> one debugger instead of a Workflow"
+      ]
+    },
+    {
+      "task": "players occasionally fall through the floor in our Unity game, seems to happen more on 144Hz monitors. can you fix it?",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "debugger"
+      ],
+      "got": "debugger",
+      "got_tier": "debugger",
+      "via": "subagent",
+      "effort": "xhigh",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1120,
+      "depth": 2.85,
+      "breadth": 1.59,
+      "signals": {
+        "self_contained": 0.68,
+        "read_only": 0.11,
+        "high_stakes": 0.12,
+        "unknown_cause": 0.92,
+        "design": 0.65,
+        "batchable": 0.23,
+        "exhaustive": 0.11
+      },
+      "reasons": [
+        "unknown cause -> debugger"
+      ]
+    },
+    {
+      "task": "we're kinda torn between Redis locks and Postgres advisory locks for the job scheduler... which would you go with? pick one and wire it up",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "architect"
+      ],
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1126,
+      "depth": 2.99,
+      "breadth": 1.81,
+      "signals": {
+        "self_contained": 0.51,
+        "read_only": 0.12,
+        "high_stakes": 0.9,
+        "unknown_cause": 0.05,
+        "design": 0.98,
+        "batchable": 0.12,
+        "exhaustive": 0.06
+      },
+      "reasons": [
+        "design decision -> architect"
+      ]
+    },
+    {
+      "task": "Someone committed the live Stripe secret key in config/secrets.yml. Get it out of the repo and move us onto the Vault-backed secrets setup.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "architect"
+      ],
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1142,
+      "depth": 2.38,
+      "breadth": 1.84,
+      "signals": {
+        "self_contained": 0.77,
+        "read_only": 0.04,
+        "high_stakes": 0.97,
+        "unknown_cause": 0.04,
+        "design": 0.27,
+        "batchable": 0.16,
+        "exhaustive": 0.32
+      },
+      "reasons": [
+        "high-stakes change with a known approach -> architect"
+      ]
+    },
+    {
+      "task": "Write the migration that splits users.name into first_name and last_name on the production Postgres (about 80M rows) without downtime.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "architect"
+      ],
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1213,
+      "depth": 2.84,
+      "breadth": 1.17,
+      "signals": {
+        "self_contained": 0.73,
+        "read_only": 0.04,
+        "high_stakes": 0.93,
+        "unknown_cause": 0.02,
+        "design": 0.82,
+        "batchable": 0.17,
+        "exhaustive": 0.15
+      },
+      "reasons": [
+        "design decision -> architect"
+      ]
+    },
+    {
+      "task": "Add passwordless login via email magic links to the auth service.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "architect"
+      ],
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1168,
+      "depth": 2.73,
+      "breadth": 1.99,
+      "signals": {
+        "self_contained": 0.62,
+        "read_only": 0.03,
+        "high_stakes": 0.95,
+        "unknown_cause": 0.02,
+        "design": 0.58,
+        "batchable": 0.13,
+        "exhaustive": 0.07
+      },
+      "reasons": [
+        "high-stakes change with a known approach -> architect"
+      ]
+    },
+    {
+      "task": "Riverpod or Bloc for the new checkout flow in the Flutter app? Set up whichever you think fits better.",
+      "ok": true,
+      "ladder": "write",
+      "acceptable": [
+        "architect"
+      ],
+      "got": "architect",
+      "got_tier": "architect",
+      "via": "subagent",
+      "effort": "max",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1182,
+      "depth": 2.82,
+      "breadth": 1.84,
+      "signals": {
+        "self_contained": 0.61,
+        "read_only": 0.05,
+        "high_stakes": 0.69,
+        "unknown_cause": 0.03,
+        "design": 0.97,
+        "batchable": 0.18,
+        "exhaustive": 0.05
+      },
+      "reasons": [
+        "design decision -> architect"
+      ]
+    },
+    {
+      "task": "Audit the whole monorepo for security issues: the Rails API, the Go workers, the React frontend and the Terraform infra each need a proper look, then fix what you find.",
+      "ok": true,
+      "ladder": "orchestrate",
+      "acceptable": [
+        "ultracode"
+      ],
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "via": "workflow",
+      "effort": "max",
+      "ladder_got": "orchestrate",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1132,
+      "depth": 3.0,
+      "breadth": 3.0,
+      "signals": {
+        "self_contained": 0.73,
+        "read_only": 0.05,
+        "high_stakes": 0.95,
+        "unknown_cause": 0.54,
+        "design": 0.22,
+        "batchable": 0.04,
+        "exhaustive": 0.97
+      },
+      "reasons": [
+        "high-stakes change with a known approach -> architect",
+        "breadth 3.00 >= 2.5 -> too broad for one context, orchestrate with Workflow"
+      ]
+    },
+    {
+      "task": "Migrate all 14 microservices off our homegrown config library onto Spring Cloud Config. Each service loads config differently, so every one needs its own work.",
+      "ok": true,
+      "ladder": "orchestrate",
+      "acceptable": [
+        "ultracode"
+      ],
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "via": "workflow",
+      "effort": "max",
+      "ladder_got": "orchestrate",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1261,
+      "depth": 2.47,
+      "breadth": 3.0,
+      "signals": {
+        "self_contained": 0.41,
+        "read_only": 0.03,
+        "high_stakes": 0.92,
+        "unknown_cause": 0.02,
+        "design": 0.22,
+        "batchable": 0.09,
+        "exhaustive": 0.97
+      },
+      "reasons": [
+        "high-stakes change with a known approach -> architect",
+        "breadth 3.00 >= 2.5 -> too broad for one context, orchestrate with Workflow",
+        "not self-contained -> put the missing context into every workflow agent prompt"
+      ]
+    },
+    {
+      "task": "Go through every part of the ML platform (ingestion, feature store, training, serving), find the performance bottlenecks in each, and fix them.",
+      "ok": true,
+      "ladder": "orchestrate",
+      "acceptable": [
+        "ultracode"
+      ],
+      "got": "ultracode",
+      "got_tier": "ultracode",
+      "via": "workflow",
+      "effort": "xhigh",
+      "ladder_got": "orchestrate",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1178,
+      "depth": 2.95,
+      "breadth": 3.0,
+      "signals": {
+        "self_contained": 0.57,
+        "read_only": 0.06,
+        "high_stakes": 0.9,
+        "unknown_cause": 0.9,
+        "design": 0.57,
+        "batchable": 0.08,
+        "exhaustive": 0.95
+      },
+      "reasons": [
+        "unknown cause -> debugger",
+        "breadth 3.00 >= 2.5 -> too broad for one context, orchestrate with Workflow"
+      ]
+    },
+    {
+      "task": "Do the same thing for the staging environment.",
+      "ok": true,
+      "ladder": "any",
+      "acceptable": [
+        "main"
+      ],
+      "got": "main",
+      "got_tier": "engineer",
+      "via": "main",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1162,
+      "depth": 1.01,
+      "breadth": 1.33,
+      "signals": {
+        "self_contained": 0.16,
+        "read_only": 0.18,
+        "high_stakes": 0.53,
+        "unknown_cause": 0.1,
+        "design": 0.09,
+        "batchable": 0.54,
+        "exhaustive": 0.21
+      },
+      "reasons": [
+        "low confidence on depth -> builder escalated to engineer",
+        "not self-contained -> keep in main agent, or pass the needed context in the prompt"
+      ]
+    },
+    {
+      "task": "ok that worked, now apply that fix to the other two controllers we talked about",
+      "ok": true,
+      "ladder": "any",
+      "acceptable": [
+        "main"
+      ],
+      "got": "main",
+      "got_tier": "engineer",
+      "via": "main",
+      "effort": "high",
+      "ladder_got": "write",
+      "tier_ok": true,
+      "ladder_ok": true,
+      "ms": 1181,
+      "depth": 1.84,
+      "breadth": 1.13,
+      "signals": {
+        "self_contained": 0.13,
+        "read_only": 0.05,
+        "high_stakes": 0.48,
+        "unknown_cause": 0.05,
+        "design": 0.05,
+        "batchable": 0.69,
+        "exhaustive": 0.13
+      },
+      "reasons": [
+        "multi-part edit -> engineer",
+        "not self-contained -> keep in main agent, or pass the needed context in the prompt"
+      ]
+    }
+  ],
+  "generated": "2026-09-25 07:45:36"
+}

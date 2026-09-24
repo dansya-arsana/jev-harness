@@ -35,13 +35,14 @@ TIERS = {
     "debugger":  {"subagent_type": "jev-debugger",  "effort": "xhigh",  "ladder": "write"},
     "architect": {"subagent_type": "jev-architect", "effort": "max",    "ladder": "write"},
     "reviewer":  {"subagent_type": "jev-reviewer",  "effort": "medium", "ladder": "read"},
+    "advisor":   {"subagent_type": "jev-advisor",   "effort": "max",    "ladder": "read"},
     "ultracode": {"subagent_type": None,            "effort": None,     "ladder": "orchestrate"},
 }
 # One step up, always on the tier's own ladder (read-only tiers never escalate to a write agent).
 ESCALATE = {
     "scout": "analyst", "analyst": "analyst",
     "builder": "engineer", "engineer": "debugger", "debugger": "architect", "architect": "architect",
-    "reviewer": "analyst",
+    "reviewer": "analyst", "advisor": "advisor",
 }
 # When stuck at the top of the write ladder, a single context is not enough: orchestrate instead.
 STUCK_ESCALATE = dict(ESCALATE, architect="ultracode", ultracode="ultracode")
@@ -53,9 +54,17 @@ DEPTH_ENGINEER = 1.5
 DEPTH_DESIGN = 2.0
 DEPTH_HARD = 2.5
 P_YES = 0.6
+STAKES_MAX = 0.85  # only clear-cut high stakes justify architect/max; measured: wrong picks 0.61-0.76, right >= 0.87
 P_STRONG = 0.8  # design must be clear-cut to justify max effort; moderate design work goes to engineer
 LOW_CONFIDENCE = 0.5
-READ_ONLY = 0.7  # read ladder == parallel-safe; ambiguous tasks (e.g. "design X", read_only ~0.6) go to the write ladder
+ADVICE_READ_ONLY = 0.85  # design + clearly read-only = advice, not implementation
+READ_ONLY = 0.6  # lean read-only: a read agent that needed to write fails safely and gets rerouted
+
+
+NO_EDIT = re.compile(
+    r"\b(don'?t|do not|without|no need to|never)\s+(fix|chang|edit|modif|touch|commit|writ(e|ing) (any )?code)\w*"
+    r"|\bno (code )?changes\b|\bread[- ]only\b|\breport only\b|\bjust (explain|investigate|report|look|review)\b",
+    re.I)
 
 
 def fail(message, fallback):
@@ -87,30 +96,44 @@ SHAPES = {
 
 
 def decide(task, depth, depth_conf, breadth, p):
-    """Pure routing policy. p holds noul probabilities: self_contained, read_only, high_stakes, unknown_cause, design."""
+    """Pure routing policy. p holds noul probabilities: self_contained, read_only, high_stakes, unknown_cause, design,
+    batchable, exhaustive."""
     reasons = []
     # Designing produces interfaces/code, so a design task is a write task even if Jev rates it mostly read-only.
     design_task = p["design"] >= P_YES and depth >= DEPTH_DESIGN
-    writes = p["read_only"] < READ_ONLY or design_task
+    # A design question that only asks for a recommendation needs max effort but no edit tools.
+    advice_only = design_task and p["read_only"] >= ADVICE_READ_ONLY
+    writes = (p["read_only"] < READ_ONLY or design_task) and not advice_only
+    if NO_EDIT.search(task):
+        # The user said not to change anything: that's a rule, not a judgment call.
+        writes, design_task = False, False
+        reasons.append("task says not to edit -> read ladder")
     risky_write = writes and p["high_stakes"] >= P_YES  # high stakes only matters for writes
 
     # Tier on the task's own ladder, ignoring breadth (also used as the worker effort for ultracode).
-    if not writes:
+    if advice_only:
+        base = "advisor"
+        reasons.append("design question that only needs a recommendation -> advisor (read-only, max)")
+    elif not writes:
         base = "scout" if depth < DEPTH_DEEP_READ else "analyst"
         if base == "analyst":
             reasons.append("read-only, deeper than a lookup -> analyst")
+    elif p["unknown_cause"] >= P_YES:
+        # Finding an unknown cause is debugging, whatever the stakes; debugger already runs at xhigh.
+        base = "debugger"
+        reasons.append("unknown cause -> debugger")
     elif design_task and (p["design"] >= P_STRONG or depth >= DEPTH_HARD):
         base = "architect"
         reasons.append("design decision -> architect")
-    elif risky_write and depth >= DEPTH_HARD:
+    elif risky_write and p["high_stakes"] >= STAKES_MAX and depth >= DEPTH_ENGINEER:
         base = "architect"
-        reasons.append("high-stakes hard edit -> architect")
+        reasons.append("high-stakes change with a known approach -> architect")
     elif risky_write:
+        base = "engineer"
+        reasons.append("moderately high-stakes or small edit -> engineer (high effort)")
+    elif depth >= DEPTH_HARD:
         base = "debugger"
-        reasons.append("high-stakes edit -> at least debugger")
-    elif p["unknown_cause"] >= P_YES or depth >= DEPTH_HARD:
-        base = "debugger"
-        reasons.append("unknown cause or hard -> debugger")
+        reasons.append("hard edit -> debugger")
     elif depth >= DEPTH_ENGINEER:
         base = "engineer"
         reasons.append("multi-part edit -> engineer")
@@ -122,9 +145,14 @@ def decide(task, depth, depth_conf, breadth, p):
 
     self_contained = p["self_contained"] >= 0.5
     mechanical = depth < DEPTH_ENGINEER and base in ("scout", "builder")
-    if breadth >= BREADTH_ULTRACODE and mechanical:
-        reasons.append("broad but mechanical -> one %s, batch the work instead of orchestrating" % base)
-    if breadth >= BREADTH_ULTRACODE and not mechanical:
+    # Wide is not enough for a Workflow: one agent can batch a repeated change however many files it touches.
+    batchable = p.get("batchable", 0.0) >= P_YES
+    exhaustive = p.get("exhaustive", 0.0) >= P_YES
+    single_agent = mechanical or batchable or not exhaustive
+    if breadth >= BREADTH_ULTRACODE and single_agent:
+        reasons.append("broad but %s -> one %s instead of a Workflow" % (
+            "mechanical" if mechanical else "one repeated change" if batchable else "one flow or question", base))
+    if breadth >= BREADTH_ULTRACODE and not single_agent:
         shape = workflow_shape(task, p)
         reasons.append("breadth %.2f >= %.1f -> too broad for one context, orchestrate with Workflow" % (breadth, BREADTH_ULTRACODE))
         if not self_contained:
@@ -177,8 +205,11 @@ def cmd_route(args):
             "Can `task` be completed purely by reading, searching, or running read-only commands, without editing any file?",
             "Only reads, searches, or reports", "Needs to create, edit, or delete files or change state"),
         "high_stakes": jevlib.noul(
-            "Does `task` touch security, secrets, authentication, payments, data migrations, production deploys, or destructive operations?",
-            "A mistake could leak data, lose data, or break production", "Ordinary code where a mistake is cheap to fix"),
+            "If `task` were done slightly wrong, could the result be a security hole, leaked secrets, lost or corrupted data, "
+            "wrong money amounts, or a production outage? Judge the consequences of a mistake, not the topic: a UI tweak on a "
+            "login screen or a flag that only prints output is not high stakes.",
+            "A plausible mistake would cause a security, data, money, or outage problem",
+            "A plausible mistake would be a visible bug that is cheap to notice and fix"),
         "unknown_cause": jevlib.noul(
             "Is `task` debugging or investigating a problem whose cause is not yet known?",
             "The cause must be found", "The cause or the needed change is already known"),
@@ -186,13 +217,24 @@ def cmd_route(args):
             "Does `task` require choosing between approaches or designing architecture or interfaces?",
             "An approach must be chosen or an architecture/interface designed",
             "The approach is already decided; it only needs to be carried out"),
+        "exhaustive": jevlib.noul(
+            "Does `task` require covering every instance or area exhaustively (an audit, a sweep, or a migration of many "
+            "separate components), rather than explaining or changing one flow, feature, or change set?",
+            "It must find or change every instance across many separate areas",
+            "It is about one flow, feature, question, or change set, even if that spans many files"),
+        "batchable": jevlib.noul(
+            "Could a single engineer do all of `task` in one pass by applying the same known change or reading pattern "
+            "repeatedly (e.g. a rename, threading one field through layers, a consistent API update), without separate "
+            "investigation or design work in each area?",
+            "One consistent change or pass, repeated across files; no per-area investigation",
+            "Different areas need their own investigation, findings, or decisions"),
     }
     try:
         r = jevlib.ask(state, questions)
         a = r["answers"]
         depth, depth_conf = a["depth"]["score"], a["depth"]["confidence"]
         breadth = a["breadth"]["score"]
-        p = {k: a[k]["noul"] for k in ("self_contained", "read_only", "high_stakes", "unknown_cause", "design")}
+        p = {k: a[k]["noul"] for k in ("self_contained", "read_only", "high_stakes", "unknown_cause", "design", "batchable", "exhaustive")}
     except (jevlib.JevError, KeyError, TypeError) as e:
         fail("Jev unavailable: %s" % e, "route with your own judgment and say Jev was unavailable")
 
