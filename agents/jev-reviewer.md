@@ -1,6 +1,6 @@
 ---
 name: jev-reviewer
-description: Read-only reviewer for Jev-routed work. Reviews a finished diff for correctness bugs and risky changes. Never edits.
+description: Read-only reviewer and checker (medium effort) for Jev-routed work: reviews a finished diff for correctness bugs and risky changes. Never edits.
 model: claude-opus-5-5
 effort: medium
 tools: Read, Grep, Glob, Bash

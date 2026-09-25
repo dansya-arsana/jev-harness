@@ -30,10 +30,10 @@ DEFAULT_LEDGER = os.path.join(".jev", "subgoals.jsonl")
 TIERS = {
     "scout":     {"subagent_type": "jev-scout",     "effort": "low",    "ladder": "read"},
     "analyst":   {"subagent_type": "jev-analyst",   "effort": "high",   "ladder": "read"},
-    "builder":   {"subagent_type": "jev-builder",   "effort": "medium", "ladder": "write"},
-    "engineer":  {"subagent_type": "jev-engineer",  "effort": "high",   "ladder": "write"},
-    "debugger":  {"subagent_type": "jev-debugger",  "effort": "xhigh",  "ladder": "write"},
-    "architect": {"subagent_type": "jev-architect", "effort": "max",    "ladder": "write"},
+    "builder":   {"subagent_type": "jev-builder",   "effort": "low",    "ladder": "write"},
+    "engineer":  {"subagent_type": "jev-engineer",  "effort": "medium", "ladder": "write"},
+    "debugger":  {"subagent_type": "jev-debugger",  "effort": "high",   "ladder": "write"},
+    "architect": {"subagent_type": "jev-architect", "effort": "max",    "ladder": "plan"},
     "reviewer":  {"subagent_type": "jev-reviewer",  "effort": "medium", "ladder": "read"},
     "advisor":   {"subagent_type": "jev-advisor",   "effort": "max",    "ladder": "read"},
     "ultracode": {"subagent_type": None,            "effort": None,     "ladder": "orchestrate"},
@@ -41,8 +41,8 @@ TIERS = {
 # One step up, always on the tier's own ladder (read-only tiers never escalate to a write agent).
 ESCALATE = {
     "scout": "analyst", "analyst": "analyst",
-    "builder": "engineer", "engineer": "debugger", "debugger": "architect", "architect": "architect",
-    "reviewer": "analyst", "advisor": "advisor",
+    "builder": "engineer", "engineer": "debugger", "debugger": "architect", "architect": "architect",  # code: low -> medium -> high -> replan
+    "reviewer": "reviewer", "advisor": "advisor",  # review stays medium
 }
 # When stuck at the top of the write ladder, a single context is not enough: orchestrate instead.
 STUCK_ESCALATE = dict(ESCALATE, architect="ultracode", ultracode="ultracode")
@@ -53,6 +53,7 @@ DEPTH_DEEP_READ = 1.5
 DEPTH_ENGINEER = 1.5
 DEPTH_DESIGN = 2.0
 DEPTH_HARD = 2.5
+DEPTH_CODE_MEDIUM = 2.0  # below this, code runs at low (builder)
 P_YES = 0.6
 STAKES_MAX = 0.85  # only clear-cut high stakes justify architect/max; measured: wrong picks 0.61-0.76, right >= 0.87
 P_STRONG = 0.8  # design must be clear-cut to justify max effort; moderate design work goes to engineer
@@ -60,6 +61,8 @@ LOW_CONFIDENCE = 0.5
 ADVICE_READ_ONLY = 0.85  # design + clearly read-only = advice, not implementation
 READ_ONLY = 0.6  # lean read-only: a read agent that needed to write fails safely and gets rerouted
 
+
+REVIEW = re.compile(r"\b(review|check|verify|double-check|sanity[- ]check|proofread|audit this (diff|change|pr))\b", re.I)
 
 NO_EDIT = re.compile(
     r"\b(don'?t|do not|without|no need to|never)\s+(fix|chang|edit|modif|touch|commit|writ(e|ing) (any )?code)\w*"
@@ -116,32 +119,48 @@ def decide(task, depth, depth_conf, breadth, p):
         reasons.append("design question that only needs a recommendation -> advisor (read-only, max)")
     elif not writes:
         base = "scout" if depth < DEPTH_DEEP_READ else "analyst"
-        if base == "analyst":
-            reasons.append("read-only, deeper than a lookup -> analyst")
+        if base == "analyst" and REVIEW.search(task):
+            # Owner rule: review and checks run at medium; high is for investigation and decisions.
+            base = "reviewer"
+            reasons.append("review / check -> reviewer (medium)")
+        elif base == "analyst":
+            reasons.append("read-only investigation -> analyst (high)")
     elif p["unknown_cause"] >= P_YES:
-        # Finding an unknown cause is debugging, whatever the stakes; debugger already runs at xhigh.
-        base = "debugger"
-        reasons.append("unknown cause -> debugger")
+        base = "analyst_then_builder"
     elif design_task and (p["design"] >= P_STRONG or depth >= DEPTH_HARD):
         base = "architect"
-        reasons.append("design decision -> architect")
+        reasons.append("design decision -> architect plans")
     elif risky_write and p["high_stakes"] >= STAKES_MAX and depth >= DEPTH_ENGINEER:
         base = "architect"
-        reasons.append("high-stakes change with a known approach -> architect")
-    elif risky_write:
-        base = "engineer"
-        reasons.append("moderately high-stakes or small edit -> engineer (high effort)")
+        reasons.append("high-stakes change -> architect plans")
     elif depth >= DEPTH_HARD:
-        base = "debugger"
-        reasons.append("hard edit -> debugger")
-    elif depth >= DEPTH_ENGINEER:
+        base = "architect"
+        reasons.append("hard change -> architect plans")
+    elif depth >= DEPTH_CODE_MEDIUM:
         base = "engineer"
-        reasons.append("multi-part edit -> engineer")
+        reasons.append("substantial multi-file change -> engineer (medium)")
     else:
         base = "builder"
-    if depth_conf < LOW_CONFIDENCE and ESCALATE[base] != base:
+        reasons.append("code defaults to builder (low)")
+    # Low depth confidence only escalates READ tiers; code effort is never raised pre-emptively
+    # (it goes up only when an attempt gets stuck: builder low -> engineer medium -> debugger high).
+    if depth_conf < LOW_CONFIDENCE and TIERS.get(base, {}).get("ladder") == "read" and ESCALATE[base] != base:
         reasons.append("low confidence on depth -> %s escalated to %s" % (base, ESCALATE[base]))
         base = ESCALATE[base]
+
+    # Owner rule: high / xhigh / max / ultracode are for decisions, architecture and orchestration only.
+    # Review and checks run at medium. Code runs at low by default; medium/high only when needed.
+    # Hard or unclear write work therefore runs in two steps: a read-only planner, then a low-effort implementer.
+    plan = None
+    if base == "architect":
+        plan = {"planner": "jev-architect", "planner_effort": "max", "implementer": "jev-builder", "implementer_effort": "low",
+                "escalate_if_stuck": ["jev-engineer (medium)", "jev-debugger (high)"]}
+        reasons.append("plan with architect (max, read-only), implement with builder (low)")
+    elif base == "analyst_then_builder":
+        plan = {"planner": "jev-analyst", "planner_effort": "high", "implementer": "jev-builder", "implementer_effort": "low",
+                "escalate_if_stuck": ["jev-engineer (medium)", "jev-debugger (high)"]}
+        reasons.append("unknown cause -> analyst (high, read-only) finds it, builder (low) fixes it")
+        base = "builder"
 
     self_contained = p["self_contained"] >= 0.5
     mechanical = depth < DEPTH_ENGINEER and base in ("scout", "builder")
@@ -161,14 +180,16 @@ def decide(task, depth, depth_conf, breadth, p):
         d.update(delegate=True, via="workflow", effort=TIERS[base]["effort"], worker_tier=base,
                  workflow_shape=shape, workflow_hint=SHAPES[shape],
                  instruction="Delegate via the Workflow tool (load the workflow-authoring skill first); "
-                             "pass opts.effort=%r and opts.model='claude-opus-5-5' to every agent() call "
-                             "(never an alias: settings can remap opus/sonnet/haiku)." % TIERS[base]["effort"])
+                             "planning/review agents may use high+; reviewers/checkers use opts.effort='medium'; every agent() that writes code passes opts.effort='low' (medium/high only when a coder got stuck); pass opts.model='claude-opus-5-5' to every agent() call "
+                             "(never an alias: settings can remap opus/sonnet/haiku).")
         return d, reasons, writes
 
     if not self_contained:
         reasons.append("not self-contained -> keep in main agent, or pass the needed context in the prompt")
     d = tier_fields(base)
     d.update(delegate=self_contained, via="subagent" if self_contained else "main")
+    if plan:
+        d["plan_first"] = plan
     return d, reasons, writes
 
 

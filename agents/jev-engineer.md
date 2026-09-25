@@ -1,8 +1,8 @@
 ---
 name: jev-engineer
-description: Implements coordinated multi-file changes with a known approach for Jev-routed subtasks (feature slices, API plus tests, consistent edits across a module).
+description: Coder for substantial coordinated multi-file changes (medium effort). Used only when the work is bigger than a builder task, or when a builder got stuck.
 model: claude-opus-5-5
-effort: high
+effort: medium
 tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 

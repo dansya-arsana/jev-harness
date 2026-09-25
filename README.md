@@ -12,7 +12,7 @@ Jev is TypeSafe's decision model. It doesn't write code or text. It returns type
 |---|---|---|
 | **Permission gate** | `PreToolUse` | Hard rules deny or ask instantly. Routine dev commands pass silently in about 45 ms. Only the unclear middle goes to Jev (about 1.1 s), which reads a script's contents before it runs. Never auto-approves. |
 | **Prompt router** | `UserPromptSubmit` | Suggests at most one fitting skill (the two-request design from TypeSafe's skill-suggestion cookbook), and injects your own instructions only when their condition holds. Skips slash commands and short replies. |
-| **Effort tiers** | `agents/jev-*.md` | Eight subagents on one model (`claude-opus-5-5`) that differ by reasoning effort. Read-only: scout (low), analyst (high), advisor (max), reviewer (medium). Write: builder (medium), engineer (high), debugger (xhigh), architect (max). Plus *ultracode*: orchestrate with a Workflow. |
+| **Effort tiers** | `agents/jev-*.md` | Eight subagents on one model (`claude-opus-5-5`). **Effort rule:** high / xhigh / max / ultracode only for decisions, architecture and orchestration; medium for review and checks; code at low by default. Planners (read-only): analyst (high), advisor (max), architect (max, plans only). Reviewer: medium. Coders: builder (**low**, default), engineer (medium, big multi-file work), debugger (high, only when stuck). Hard work runs as plan first, then implement at low. |
 | **Router CLI** | `jev.py route / stuck / dedupe` | Jev picks the tier, effort, and whether a task can run in parallel. It escalates when an agent is stuck (never across the read/write boundary) and catches duplicate subgoals. |
 | **Context packs** | `jevpack.py build / slice` | Gathers code once as function/class chunks. Jev scores every chunk per subtask: full, outline, or hidden. |
 | **Report** | `jev.py report` | Summarizes the logs: what the gate flagged, slow prompts, Jev errors, routing decisions. |
@@ -56,7 +56,7 @@ If your `settings.json` remaps the model aliases (`ANTHROPIC_DEFAULT_OPUS_MODEL`
 
 ```bash
 python3 skill/jev-orchestrator/hooks/tests/test_permission_gate.py   # 24 unit tests
-python3 skill/jev-orchestrator/scripts/tests/test_route_policy.py    # 14 offline policy tests
+python3 skill/jev-orchestrator/scripts/tests/test_route_policy.py    # 20 offline policy tests
 python3 skill/jev-orchestrator/hooks/tests/test_prompt_router.py     # 17 unit tests
 python3 evals/run_evals.py all            # labeled evals -> evals/results/*.json
 python3 evals/run_evals.py gate-heldout2   # fresh held-out gate set

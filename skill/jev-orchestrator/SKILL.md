@@ -11,21 +11,26 @@ Helper: `python3 ~/.claude/skills/jev-orchestrator/scripts/jev.py <command>`. Ea
 
 ## Tiers
 
-Every subagent tier runs Claude Opus 5.5 (`claude-opus-5-5`, pinned in the agent file). Tiers differ only by reasoning effort. `xhigh` sits between `high` and `max`.
+**Owner rule for effort:**
+- **high, xhigh ("extra"), max and ultracode:** only for decisions, architecture thinking and orchestration.
+- **medium:** review and checks.
+- **code:** low by default. Medium or high only when it's really needed, never as the starting point.
+
+Every tier runs `claude-opus-5-5`, pinned in the agent file.
 
 | tier | subagent_type | effort | ladder | for |
 |---|---|---|---|---|
-| scout | `jev-scout` | low | read | lookups: "where is X", list imports, quick read-only answers |
-| analyst | `jev-analyst` | high | read | deep read-only investigation and explanation across many files |
-| builder | `jev-builder` | medium | write | clear edits in 1-2 files |
-| engineer | `jev-engineer` | high | write | coordinated multi-file changes with a known approach |
-| debugger | `jev-debugger` | xhigh | write | unknown root cause, intermittent bugs, subtle correctness |
-| architect | `jev-architect` | max | write | design decisions; security, secrets, payments, migrations, production |
-| advisor | `jev-advisor` | max | read | design questions that only need a recommendation (which library/approach, trade-offs) |
-| reviewer | `jev-reviewer` | medium | read | end-of-task diff review (you pick it; routing never returns it) |
-| ultracode | none: Workflow tool | per worker | orchestrate | too broad for one context: many subsystems, whole-codebase audits, many-file migrations, "be comprehensive" |
+| scout | `jev-scout` | low | read | lookups, quick read-only answers |
+| analyst | `jev-analyst` | high | read | investigation, root-cause finding (decision thinking, no edits) |
+| advisor | `jev-advisor` | max | read | design questions that only need a recommendation |
+| architect | `jev-architect` | max | plan | the implementation plan for design, hard or high-stakes work; never edits |
+| reviewer | `jev-reviewer` | medium | read | review and checks of finished work |
+| builder | `jev-builder` | **low** | write | **default coder**: ordinary edits, and implementing a plan |
+| engineer | `jev-engineer` | medium | write | substantial multi-file changes, or a stuck builder |
+| debugger | `jev-debugger` | high | write | only when builder and engineer got stuck on the same problem |
+| ultracode | Workflow | orchestration | orchestrate | planning and review fan-out; coding agents inside it pass `opts.effort: 'low'`, and reviewers `'medium'` |
 
-Read-only agents have only `Read, Grep, Glob, Bash` and never modify files. A task that says not to edit ("don't fix anything", "report only", "read-only") always goes to the read ladder; when unsure, routing leans read-only, because a read agent that needed to write just reports back. Read-only tasks stay on the read ladder, and escalation never moves a task to another ladder. High stakes raises the tier only for writes, and only clear-cut stakes (a plausible mistake means a security, data, money or outage problem) reach architect; moderate stakes get engineer. An unknown cause always goes to debugger first. A Workflow (ultracode) needs exhaustive work across separate areas that isn't one repeated change.
+**Two-step routing:** when `route` returns `plan_first`, run the planner first (read-only, high or above), then give its plan verbatim to the implementer, which is `jev-builder` at low effort. Only raise coding effort through a stuck check: builder (low) → engineer (medium) → debugger (high) → replan with the architect.
 
 ## Loop
 
@@ -37,7 +42,7 @@ Read-only agents have only `Read, Grep, Glob, Bash` and never modify files. A ta
    - `via: workflow` (tier `ultracode`, `subagent_type: null`): don't spawn one subagent. Load the `workflow-authoring` skill, then author and run a Workflow script that fans out agents and adversarially verifies their results. `workflow_shape` (understand / investigate / review read-only; audit / migrate write) and `workflow_hint` suggest a structure. In the script's `agent()` calls, **always pass `opts.model: 'claude-opus-5-5'`**: Workflow agents otherwise inherit the session's model alias, which follows any alias remapping in your settings. Never pass an alias. Pass `opts.effort` set to the returned `effort` (the worker tier's effort, see `worker_tier`). `workflow_shape` `investigate` and `understand` are read-only: no writer agents. Writers must never share files.
    - `parallel_safe: true` means the subtask is read-only, so launch it together with other parallel-safe subtasks in one message. Subtasks that edit files run **one at a time**, never two writers on the same files.
 4. **Mark done**: `jev.py done <id>` once the result is back and checked.
-5. **Stuck check**: if a subtask failed twice, or tests keep failing for the same reason, save the recent output to a file and run `jev.py stuck --state @<file> --tier <tier>`. If `escalate: true`, re-run it with `next_tier` / `subagent_type` and tell the new agent what already failed. Escalation stays on the task's own ladder: scout -> analyst -> analyst, and builder -> engineer -> debugger -> architect. A stuck architect returns `next_tier: ultracode`, meaning orchestrate it with a Workflow.
+5. **Stuck check**: if a subtask failed twice, or tests keep failing for the same reason, save the recent output to a file and run `jev.py stuck --state @<file> --tier <tier>`. If `escalate: true`, re-run it with `next_tier` / `subagent_type` and tell the new agent what already failed. Escalation stays on the task's own ladder: scout -> analyst -> analyst, and code builder (low) -> engineer (medium) -> debugger (high) -> architect replans. A stuck architect returns `next_tier: ultracode`, meaning orchestrate it with a Workflow.
 6. **Review**: for non-trivial changes, finish with `jev-reviewer` on the diff.
 7. **Verify with real checks.** Jev's answers are always well-formed but can still be wrong. "Done" means tests pass or the build succeeds, not that Jev thinks it's done.
 

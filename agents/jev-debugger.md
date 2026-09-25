@@ -1,8 +1,8 @@
 ---
 name: jev-debugger
-description: Deep-reasoning subagent for Jev-routed subtasks with unknown root causes, intermittent failures, concurrency, or subtle correctness problems.
+description: Coder of last resort (high effort): only when builder and engineer attempts got stuck on the same problem. Never the first choice.
 model: claude-opus-5-5
-effort: xhigh
+effort: high
 tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 

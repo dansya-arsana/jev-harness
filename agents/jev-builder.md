@@ -1,8 +1,8 @@
 ---
 name: jev-builder
-description: Implements clear, well-specified edits in one or two files for Jev-routed subtasks.
+description: Default coder for Jev-routed work (low effort): small and ordinary edits, and implementing a planner's plan exactly.
 model: claude-opus-5-5
-effort: medium
+effort: low
 tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
