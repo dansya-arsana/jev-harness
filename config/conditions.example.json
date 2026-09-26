@@ -19,6 +19,7 @@
     "id": "my-app",
     "threshold": 0.6,
     "cwd_prefix": "~/code/my-app",
+    "paths": ["~/code/my-app", "/tmp/my-app-"],
     "when": "Is `user_request` about the My App project?",
     "yes": "It is about My App.",
     "no": "It is not about My App.",

@@ -8,6 +8,8 @@ Commands:
   list   [--ledger PATH]          -> show the subgoal ledger
   stuck  --state TEXT|@FILE [--tier T] -> is the agent stuck? recommends escalation on T's own ladder
   report [--days N] [--json]      -> summarize gate / prompt-router / routing logs for tuning
+  outcomes [--days N] [--json]    -> how routed subagent dispatches went (from their transcripts + labels)
+  label  ID|last ok|too_low|too_high [--note T] -> record whether the tier that ran was right
 
 Every command prints one JSON object on stdout. Stdlib only (Python 3.9+).
 Each decision is appended to ~/.claude/jev/decisions.jsonl for threshold tuning.
@@ -195,8 +197,10 @@ def decide(task, depth, depth_conf, breadth, p):
 
 # ---------- route ----------
 
-def cmd_route(args):
-    state = {"task": jevlib.redact(args.task), "context_from_main_agent": jevlib.redact(args.context or "")}
+def route_task(task, context="", timeout=None):
+    """Ask Jev about `task` and apply the routing policy. Returns (decision, answers, state).
+    Raises jevlib.JevError if Jev can't answer. `timeout` (seconds) caps a single Jev attempt with no retries."""
+    state = {"task": jevlib.redact(task), "context_from_main_agent": jevlib.redact(context or "")}
     questions = {
         "depth": {
             "type": "score",
@@ -250,16 +254,17 @@ def cmd_route(args):
             "One consistent change or pass, repeated across files; no per-area investigation",
             "Different areas need their own investigation, findings, or decisions"),
     }
+    kw = {"timeout": timeout, "retries": 1} if timeout else {}
     try:
-        r = jevlib.ask(state, questions)
+        r = jevlib.ask(state, questions, **kw)
         a = r["answers"]
         depth, depth_conf = a["depth"]["score"], a["depth"]["confidence"]
         breadth = a["breadth"]["score"]
         p = {k: a[k]["noul"] for k in ("self_contained", "read_only", "high_stakes", "unknown_cause", "design", "batchable", "exhaustive")}
-    except (jevlib.JevError, KeyError, TypeError) as e:
-        fail("Jev unavailable: %s" % e, "route with your own judgment and say Jev was unavailable")
+    except (KeyError, TypeError) as e:
+        raise jevlib.JevError("bad Jev answer: %r" % e)
 
-    decision, reasons, writes = decide(args.task, depth, depth_conf, breadth, p)
+    decision, reasons, writes = decide(task, depth, depth_conf, breadth, p)
     decision.update({
         "parallel_safe": not writes,
         "depth": round(depth, 2),
@@ -269,6 +274,14 @@ def cmd_route(args):
         "reasons": reasons,
         "jev_tokens": r.get("usage", {}).get("input_tokens"),
     })
+    return decision, a, state
+
+
+def cmd_route(args):
+    try:
+        decision, a, state = route_task(args.task, args.context or "")
+    except jevlib.JevError as e:
+        fail("Jev unavailable: %s" % e, "route with your own judgment and say Jev was unavailable")
     jevlib.log("decisions", {"cwd": os.getcwd(), "kind": "route", "inputs": state, "answers": a, "decision": decision})
     print(json.dumps(decision, indent=2))
 
@@ -369,6 +382,253 @@ def cmd_stuck(args):
     print(json.dumps(decision, indent=2))
 
 
+# ---------- dispatch outcomes / labels ----------
+
+PROJECTS_DIR = os.path.expanduser("~/.claude/projects")
+EFFORT_RANK = {"low": 0, "medium": 1, "high": 2, "max": 3}
+LABELS = ("ok", "too_low", "too_high")
+ESCALATE_JACCARD = 0.6
+FINAL_FLAGS = re.compile(r"\b(blocked|stuck|could not|couldn't|unable|failing)\b", re.I)
+_TYPE_TIER = {t["subagent_type"]: name for name, t in TIERS.items() if t["subagent_type"]}
+
+
+def tier_side(subagent_type):
+    """'read' (read + plan ladders), 'write', or None for types Jev doesn't route."""
+    tier = _TYPE_TIER.get(subagent_type or "")
+    if not tier:
+        return None
+    return "write" if TIERS[tier]["ladder"] == "write" else "read"
+
+
+def tier_effort(subagent_type):
+    tier = _TYPE_TIER.get(subagent_type or "")
+    return EFFORT_RANK.get(TIERS[tier]["effort"]) if tier else None
+
+
+def _words(text):
+    return set(re.findall(r"[a-z0-9]+", (text or "").lower()))
+
+
+def _jaccard(a, b):
+    a, b = _words(a), _words(b)
+    return len(a & b) / len(a | b) if a | b else 0.0
+
+
+def find_transcripts(projects_dir, ids):
+    """tool_use_id -> (meta dict, jsonl path) for subagent transcripts under projects_dir."""
+    import glob
+    out = {}
+    for meta_path in glob.glob(os.path.join(projects_dir, "*", "*", "subagents", "agent-*.meta.json")):
+        try:
+            with open(meta_path) as f:
+                meta = json.load(f)
+        except (OSError, ValueError):
+            continue
+        tid = meta.get("toolUseId") if isinstance(meta, dict) else None
+        if tid in ids:
+            out[tid] = (meta, meta_path[:-len(".meta.json")] + ".jsonl")
+    return out
+
+
+def _parse_ts(value):
+    from datetime import datetime
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return None
+
+
+def transcript_stats(path):
+    stats = {"minutes": None, "turns": 0, "tool_uses": 0, "tool_errors": 0, "output_tokens": 0, "final_flags": []}
+    stamps, tokens, last_text = [], {}, ""
+    try:
+        f = open(path)
+    except OSError:
+        return stats
+    with f:
+        for line in f:
+            try:
+                e = json.loads(line)
+            except ValueError:
+                continue
+            if not isinstance(e, dict):
+                continue
+            t = _parse_ts(e.get("timestamp")) if e.get("timestamp") else None
+            if t is not None:
+                stamps.append(t)
+            msg = e.get("message") if isinstance(e.get("message"), dict) else {}
+            content = msg.get("content") if isinstance(msg.get("content"), list) else []
+            if e.get("type") == "assistant":
+                stats["turns"] += 1
+                usage = msg.get("usage") or {}
+                mid = msg.get("id") or id(e)
+                tokens[mid] = max(tokens.get(mid, 0), usage.get("output_tokens") or 0)
+                text = "".join(c.get("text", "") for c in content if isinstance(c, dict) and c.get("type") == "text")
+                if text:
+                    last_text = text
+            for c in content:
+                if not isinstance(c, dict):
+                    continue
+                if c.get("type") == "tool_use":
+                    stats["tool_uses"] += 1
+                elif c.get("type") == "tool_result" and c.get("is_error"):
+                    stats["tool_errors"] += 1
+    if stamps:
+        stats["minutes"] = round((max(stamps) - min(stamps)) / 60.0, 2)
+    stats["output_tokens"] = sum(tokens.values())
+    stats["final_flags"] = sorted(set(m.lower() for m in FINAL_FLAGS.findall(last_text)))
+    return stats
+
+
+def _labels(decisions):
+    out = {}
+    for r in decisions:  # log order: the latest label wins
+        if r.get("kind") == "dispatch_label" and r.get("label") in LABELS:
+            out[r.get("tool_use_id")] = r
+    return out
+
+
+def _accuracy(rows, key):
+    """Accuracy of what ran, split by whose pick ran, and who was right on disagreements."""
+    acc = {"labeled": 0, "ok": 0, "jev_pick_ran": [0, 0], "main_pick_ran": [0, 0],
+           "disagreements": {"jev_right": 0, "main_right": 0, "unclear": 0}}
+    for r in rows:
+        label = r.get(key)
+        if label not in LABELS:
+            continue
+        acc["labeled"] += 1
+        ok = label == "ok"
+        acc["ok"] += ok
+        ran, jev, main = r["ran_type"], r["jev_type"], r["main_type"]
+        for who, pick in (("jev_pick_ran", jev), ("main_pick_ran", main)):
+            if pick and ran == pick:
+                acc[who][0] += ok
+                acc[who][1] += 1
+        if not jev or jev == main or ran not in (jev, main):
+            continue
+        other = main if ran == jev else jev
+        ran_winner, other_winner = ("jev_right", "main_right") if ran == jev else ("main_right", "jev_right")
+        er, eo = tier_effort(ran), tier_effort(other)
+        if ok:
+            acc["disagreements"][ran_winner] += 1
+        elif er is not None and eo is not None and ((label == "too_low" and eo > er) or (label == "too_high" and eo < er)):
+            acc["disagreements"][other_winner] += 1
+        else:
+            acc["disagreements"]["unclear"] += 1
+    for who in ("jev_pick_ran", "main_pick_ran"):
+        n_ok, n = acc[who]
+        acc[who] = {"n": n, "ok": n_ok, "accuracy": round(n_ok / n, 2) if n else None}
+    acc["accuracy"] = round(acc["ok"] / acc["labeled"], 2) if acc["labeled"] else None
+    return acc
+
+
+def _gt(a, b):
+    return a is not None and b is not None and a > b
+
+
+def _median(values):
+    v = sorted(x for x in values if isinstance(x, (int, float)))
+    if not v:
+        return None
+    m = len(v) // 2
+    return v[m] if len(v) % 2 else (v[m - 1] + v[m]) / 2.0
+
+
+def build_outcomes(log_dir, days, projects_dir=None):
+    since = time.time() - days * 86400
+    decisions = _read_log(log_dir, "decisions", since)
+    labels = _labels(_read_log(log_dir, "decisions", 0))
+    dispatches = [r for r in decisions if r.get("kind") == "dispatch" and r.get("tool_use_id")]
+    found = find_transcripts(projects_dir or PROJECTS_DIR, {r["tool_use_id"] for r in dispatches})
+    rows = []
+    for r in dispatches:
+        tid = r["tool_use_id"]
+        meta, path = found.get(tid, (None, None))
+        stats = transcript_stats(path) if path else {}
+        fallback = r.get("jev_type") if r.get("applied") else r.get("main_type")
+        lab = labels.get(tid) or {}
+        rows.append(dict({
+            "tool_use_id": tid, "session_id": r.get("session_id"), "ts": r.get("ts", 0),
+            "description": r.get("description") or "", "main_type": r.get("main_type"), "jev_type": r.get("jev_type"),
+            "applied": bool(r.get("applied")), "skip": r.get("skip"),
+            "ran_type": (meta or {}).get("agentType") or fallback, "transcript": bool(path),
+            "label": lab.get("label"), "note": lab.get("note"),
+        }, **stats))
+    for i, r in enumerate(rows):
+        side, eff = tier_side(r["ran_type"]), tier_effort(r["ran_type"])
+        r["escalated"] = bool(side) and any(
+            later["session_id"] == r["session_id"] and tier_side(later["ran_type"]) == side
+            and _gt(tier_effort(later["ran_type"]), eff)
+            and _jaccard(later["description"], r["description"]) >= ESCALATE_JACCARD
+            for later in rows[i + 1:])
+        r["stuck"] = bool(r.get("final_flags"))
+        r["auto_label"] = "too_low" if (r["escalated"] or r["stuck"]) else None
+    routable = [r for r in rows if r["skip"] != "tier_not_routable" and r["jev_type"]]
+    per_tier = {}
+    for t in sorted(set(r["ran_type"] for r in rows if r["ran_type"])):
+        g = [r for r in rows if r["ran_type"] == t]
+        per_tier[t] = {"n": len(g), "median_min": _median([r.get("minutes") for r in g]),
+                       "median_out_tokens": _median([r.get("output_tokens") for r in g if r["transcript"]]),
+                       "errors": sum(1 for r in g if r.get("tool_errors")), "stuck": sum(r["stuck"] for r in g),
+                       "escalated": sum(r["escalated"] for r in g)}
+    summary = {
+        "dispatches": len(rows), "routable": len(routable), "with_transcript": sum(r["transcript"] for r in rows),
+        "agreement": round(sum(r["jev_type"] == r["main_type"] for r in routable) / len(routable), 2) if routable else None,
+        "applied_rate": round(sum(r["applied"] for r in routable) / len(routable), 2) if routable else None,
+        "per_tier": per_tier,
+        "manual": _accuracy(rows, "label"),
+        "auto": _accuracy([r for r in rows if not r["label"]], "auto_label"),
+    }
+    return {"days": days, "rows": rows, "summary": summary}
+
+
+def _print_outcomes(out):
+    rows, s = out["rows"], out["summary"]
+    if not rows:
+        print("No dispatch records in the last %g day(s). The dispatch_router hook logs them once registered." % out["days"])
+        return
+    print("%-12s %-14s %-14s %-14s %3s %6s %7s %4s %-9s %s" % ("tool_use", "main", "jev", "ran", "app", "min", "outtok", "err", "label", "description"))
+    for r in rows:
+        print("%-12s %-14s %-14s %-14s %3s %6s %7s %4s %-9s %s" % (
+            r["tool_use_id"][-12:], r["main_type"] or "-", r["jev_type"] or "-", r["ran_type"] or "-",
+            "y" if r["applied"] else "", r.get("minutes") if r.get("minutes") is not None else "-",
+            r.get("output_tokens", "-"), r.get("tool_errors", "-"),
+            r["label"] or ("~" + r["auto_label"] if r["auto_label"] else "-"), r["description"][:50]))
+    print("\ndispatches %d (routable %d, transcripts %d)  agreement %s  applied %s" % (
+        s["dispatches"], s["routable"], s["with_transcript"], s["agreement"], s["applied_rate"]))
+    for t, v in s["per_tier"].items():
+        print("  %-14s n %d  median %s min  %s out tok  errors %d  stuck %d  escalated %d" % (
+            t, v["n"], v["median_min"], v["median_out_tokens"], v["errors"], v["stuck"], v["escalated"]))
+    for kind in ("manual", "auto"):
+        a = s[kind]
+        if a["labeled"]:
+            print("  %s labels %d: accuracy %s | jev pick ran %s | main pick ran %s | disagreements %s" % (
+                kind, a["labeled"], a["accuracy"], a["jev_pick_ran"], a["main_pick_ran"], a["disagreements"]))
+        else:
+            print("  %s labels: none" % kind)
+
+
+def cmd_outcomes(args):
+    out = build_outcomes(os.path.expanduser(args.log_dir), args.days, args.projects_dir)
+    if args.json:
+        print(json.dumps(out, indent=2))
+    else:
+        _print_outcomes(out)
+
+
+def cmd_label(args):
+    tid = args.id
+    if tid == "last":
+        rows = [r for r in _read_log(os.path.expanduser(args.log_dir), "decisions", 0) if r.get("kind") == "dispatch" and r.get("tool_use_id")]
+        if not rows:
+            print(json.dumps({"error": "no dispatch records to label"}))
+            sys.exit(1)
+        tid = rows[-1]["tool_use_id"]
+    rec = {"kind": "dispatch_label", "tool_use_id": tid, "label": args.label, "note": args.note}
+    jevlib.log("decisions", rec)
+    print(json.dumps(dict(rec, ok=True)))
+
+
 # ---------- report ----------
 
 def _read_log(log_dir, name, since):
@@ -457,6 +717,24 @@ def build_report(log_dir, days):
         "duplicates_caught": sum(1 for r in dedupe if (r.get("decision") or {}).get("duplicate_of")),
     }
 
+    # Live dispatch routing (dispatch_router hook)
+    disp = [r for r in decisions if r.get("kind") == "dispatch"]
+    routable = [r for r in disp if r.get("skip") != "tier_not_routable" and r.get("jev_type")]
+    labels = _labels(decisions)
+    dispatch = {
+        "dispatches": len(disp), "routable": len(routable),
+        "skips": _count(r.get("skip") for r in disp if r.get("skip")),
+        "agreement": round(sum(r.get("jev_type") == r.get("main_type") for r in routable) / len(routable), 2) if routable else None,
+        "applied_rate": round(sum(bool(r.get("applied")) for r in routable) / len(routable), 2) if routable else None,
+        "errors": sum(1 for r in disp if r.get("errors")),
+        "labeled_accuracy": None,
+    }
+    if labels:
+        lab_rows = [{"label": (labels.get(r.get("tool_use_id")) or {}).get("label"), "main_type": r.get("main_type"),
+                     "jev_type": r.get("jev_type"),
+                     "ran_type": r.get("jev_type") if r.get("applied") else r.get("main_type")} for r in disp]
+        dispatch["labeled_accuracy"] = _accuracy(lab_rows, "label")
+
     # Things worth a look (plain rules; thresholds are starting points)
     look = []
     if router["errors"]:
@@ -471,7 +749,7 @@ def build_report(log_dir, days):
         look.append("router: no skill suggested in %d prompts; check needs_skill thresholds" % len(ran))
     if routes and orch["kept_in_main"] > len(routes) / 2:
         look.append("routing: most tasks judged not self-contained; pass more context with --context")
-    return {"days": days, "log_dir": log_dir, "gate": gate, "router": router, "orchestrator": orch, "look_at": look}
+    return {"days": days, "log_dir": log_dir, "gate": gate, "router": router, "orchestrator": orch, "dispatch": dispatch, "look_at": look}
 
 
 def _print_report(rep):
@@ -496,6 +774,13 @@ def _print_report(rep):
     print("  routes: %d  by tier: %s  kept in main: %d" % (o["routes"], kv(o["by_tier"]), o["kept_in_main"]))
     print("  stuck checks: %d  escalations: %s" % (o["stuck_checks"], kv(o["escalations"])))
     print("  dedupe checks: %d  duplicates caught: %d" % (o["dedupe_checks"], o["duplicates_caught"]))
+    d = rep["dispatch"]
+    print("\nDISPATCH ROUTING")
+    print("  dispatches: %d  routable: %d  skips: %s  errors: %d" % (d["dispatches"], d["routable"], kv(d["skips"]), d["errors"]))
+    print("  agreement: %s  applied: %s" % (d["agreement"], d["applied_rate"]))
+    if d["labeled_accuracy"] and d["labeled_accuracy"]["labeled"]:
+        a = d["labeled_accuracy"]
+        print("  labeled %d: accuracy %s  disagreements %s  (details: jev.py outcomes)" % (a["labeled"], a["accuracy"], a["disagreements"]))
     print("\nWORTH A LOOK")
     for line in rep["look_at"] or ["nothing flagged"]:
         print("  - " + line)
@@ -522,6 +807,11 @@ def main():
     p = sub.add_parser("report"); p.add_argument("--days", type=float, default=7)
     p.add_argument("--log-dir", default=jevlib.LOG_DIR); p.add_argument("--json", action="store_true")
     p.set_defaults(fn=cmd_report)
+    p = sub.add_parser("outcomes"); p.add_argument("--days", type=float, default=7)
+    p.add_argument("--log-dir", default=jevlib.LOG_DIR); p.add_argument("--projects-dir", default=PROJECTS_DIR)
+    p.add_argument("--json", action="store_true"); p.set_defaults(fn=cmd_outcomes)
+    p = sub.add_parser("label"); p.add_argument("id", help="tool_use_id or 'last'"); p.add_argument("label", choices=LABELS)
+    p.add_argument("--note"); p.add_argument("--log-dir", default=jevlib.LOG_DIR); p.set_defaults(fn=cmd_label)
     p = sub.add_parser("stuck"); p.add_argument("--state", required=True)
     p.add_argument("--tier", default="builder", choices=list(STUCK_ESCALATE)); p.set_defaults(fn=cmd_stuck)
     args = ap.parse_args()

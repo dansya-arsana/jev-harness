@@ -11,10 +11,12 @@ Jev is TypeSafe's decision model. It doesn't write code or text. It returns type
 | Component | Hook / entry point | What it does |
 |---|---|---|
 | **Permission gate** | `PreToolUse` | Hard rules deny or ask instantly. Routine dev commands pass silently in about 45 ms. Only the unclear middle goes to Jev (about 1.1 s), which reads a script's contents before it runs. Never auto-approves. |
-| **Prompt router** | `UserPromptSubmit` | Suggests at most one fitting skill (the two-request design from TypeSafe's skill-suggestion cookbook), and injects your own instructions only when their condition holds. Skips slash commands and short replies. |
-| **Effort tiers** | `agents/jev-*.md` | Eight subagents on one model (`claude-opus-5-5`). **Effort rule:** high / xhigh / max / ultracode only for decisions, architecture and orchestration; medium for review and checks; code at low by default. Planners (read-only): analyst (high), advisor (max), architect (max, plans only). Reviewer: medium. Coders: builder (**low**, default), engineer (medium, big multi-file work), debugger (high, only when stuck). Hard work runs as plan first, then implement at low. |
+| **Prompt router** | `UserPromptSubmit` | Suggests at most one fitting skill (the two-request design from TypeSafe's skill-suggestion cookbook), and injects your own instructions only when their condition holds. Skips short replies, harness notices (agent-finished messages, bash input) and slash commands, except `/goal`, whose text it routes. |
+| **Effort tiers** | `agents/jev-*.md` | Nine subagents on one model (`claude-opus-5-5`). **Effort rule:** high / xhigh / max / ultracode only for decisions, architecture and orchestration; medium for review and checks; code at low by default. Planners (read-only): analyst (high), advisor (max), architect (max, plans only). Reviewer: medium. QA (browser, read-only): low. Coders: builder (**low**, default), engineer (medium, big multi-file work), debugger (high, only when stuck). Hard work runs as plan first, then implement at low. |
+| **Dispatch router** | `PreToolUse` (`Agent\|Task`) | Re-routes jev-* subagent dispatches with the same policy as `jev.py route`; swaps the tier only on the same read/write side at depth confidence >= 0.6, never to debugger. `[jev:keep]` opts out, `JEV_DISPATCH=shadow\|off`. `jev.py outcomes` / `label` measure how the dispatches went. |
 | **Router CLI** | `jev.py route / stuck / dedupe` | Jev picks the tier, effort, and whether a task can run in parallel. It escalates when an agent is stuck (never across the read/write boundary) and catches duplicate subgoals. |
 | **Context packs** | `jevpack.py build / slice` | Gathers code once as function/class chunks. Jev scores every chunk per subtask: full, outline, or hidden. |
+| **Browser QA** | `jevqa.py run` + `agents/jev-qa.md` | Drives local or staging pages with jev-ultrafast in a throwaway Chrome profile, fills forms only with fake scenario values, and saves viewport screenshot slices plus DOM and console checks. The `jev-qa` agent (low effort) reviews them. Needs `git clone https://github.com/browser-use/jev-ultrafast.git ~/Documents/Tools/jev-ultrafast && cd ~/Documents/Tools/jev-ultrafast && uv sync`. |
 | **Report** | `jev.py report` | Summarizes the logs: what the gate flagged, slow prompts, Jev errors, routing decisions. |
 
 ## Headline results
@@ -45,10 +47,10 @@ cp .env.example .env            # put your TYPESAFE_API_KEY in it
 
 Then:
 
-- **Your own rules:** edit `~/.claude/jev/conditions.json` (seeded from `config/conditions.example.json`). Each rule is a yes/no question about the prompt, plus the text or file to inject when it holds.
+- **Your own rules:** edit `~/.claude/jev/conditions.json` (seeded from `config/conditions.example.json`). Each rule is a yes/no question about the prompt, plus the text or file to inject when it holds. A rule with `cwd_prefix` (plus optional `paths` aliases) also fires without asking Jev when the session runs inside that folder, or when at least 3 of the session's last 30 tool calls touched one of those paths.
 - **Use the orchestrator:** type `/jev-orchestrator` or "split this into subagents" in Claude Code.
 - **Check on it:** `python3 ~/.claude/skills/jev-orchestrator/scripts/jev.py report`.
-- **Switches:** `JEV_GATE=off` keeps only the hard denies; `JEV_ROUTER=off` disables the router.
+- **Switches:** `JEV_GATE=off` keeps only the hard denies; `JEV_ROUTER=off` disables the router; `JEV_ROUTER_SLASH=loop,...` routes the text of more slash commands besides `/goal`.
 
 If your `settings.json` remaps the model aliases (`ANTHROPIC_DEFAULT_OPUS_MODEL`, etc.), keep the agent files on a full model ID, as they ship.
 
@@ -57,7 +59,9 @@ If your `settings.json` remaps the model aliases (`ANTHROPIC_DEFAULT_OPUS_MODEL`
 ```bash
 python3 skill/jev-orchestrator/hooks/tests/test_permission_gate.py   # 24 unit tests
 python3 skill/jev-orchestrator/scripts/tests/test_route_policy.py    # 20 offline policy tests
-python3 skill/jev-orchestrator/hooks/tests/test_prompt_router.py     # 17 unit tests
+python3 skill/jev-orchestrator/hooks/tests/test_prompt_router.py     # 29 unit tests
+python3 skill/jev-orchestrator/scripts/tests/test_jevqa.py           # 36 offline browser-QA tests
+python3 skill/jev-orchestrator/hooks/tests/test_dispatch_router.py   # 15 offline dispatch-router and outcomes tests
 python3 evals/run_evals.py all            # labeled evals -> evals/results/*.json
 python3 evals/run_evals.py gate-heldout2   # fresh held-out gate set
 python3 evals/run_evals.py route-heldout3  # untouched final routing set

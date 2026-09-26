@@ -2,7 +2,7 @@
 # Install the Jev harness into ~/.claude by linking it from this repo.
 #
 #   ./install.sh           link the skill, the jev-* agents, and seed ~/.claude/jev/conditions.json
-#   ./install.sh --hooks   also register the permission gate and prompt router in ~/.claude/settings.json
+#   ./install.sh --hooks   also register the permission gate, dispatch router and prompt router in ~/.claude/settings.json
 #
 # Safe to re-run: links are refreshed, real files it would replace are moved to ~/.claude/backups/ (never deleted),
 # settings.json is backed up before any change, and hook entries are only added once.
@@ -55,20 +55,23 @@ import json, sys
 path = sys.argv[1]
 d = json.load(open(path))
 hooks = d.setdefault("hooks", {})
-entries = {
-    "PreToolUse": {"matcher": "Bash|Write|Edit|MultiEdit|NotebookEdit", "hooks": [{"type": "command",
-                   "command": "python3 ~/.claude/skills/jev-orchestrator/hooks/permission_gate.py", "timeout": 10}]},
-    "UserPromptSubmit": {"hooks": [{"type": "command",
-                         "command": "python3 ~/.claude/skills/jev-orchestrator/hooks/prompt_router.py", "timeout": 15}]},
-}
-for event, entry in entries.items():
+entries = [
+    ("PreToolUse", {"matcher": "Bash|Write|Edit|MultiEdit|NotebookEdit", "hooks": [{"type": "command",
+                    "command": "python3 ~/.claude/skills/jev-orchestrator/hooks/permission_gate.py", "timeout": 10}]}),
+    ("PreToolUse", {"matcher": "Agent|Task", "hooks": [{"type": "command",
+                    "command": "python3 ~/.claude/skills/jev-orchestrator/hooks/dispatch_router.py", "timeout": 10}]}),
+    ("UserPromptSubmit", {"hooks": [{"type": "command",
+                          "command": "python3 ~/.claude/skills/jev-orchestrator/hooks/prompt_router.py", "timeout": 15}]}),
+]
+for event, entry in entries:
     lst = hooks.setdefault(event, [])
     cmd = entry["hooks"][0]["command"]
+    name = cmd.rsplit("/", 1)[-1]
     if any(h.get("command") == cmd for g in lst for h in g.get("hooks", [])):
-        print("hook      %s already registered" % event)
+        print("hook      %s %s already registered" % (event, name))
     else:
         lst.append(entry)
-        print("hook      %s registered" % event)
+        print("hook      %s %s registered" % (event, name))
 text = json.dumps(d, indent=2) + "\n"
 json.loads(text)
 open(path, "w").write(text)

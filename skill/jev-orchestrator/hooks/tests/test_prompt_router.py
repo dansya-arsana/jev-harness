@@ -23,6 +23,7 @@ LOG_PATH = os.path.expanduser("~/.claude/jev/%s.jsonl" % LOG_NAME)
 TMP = tempfile.mkdtemp(prefix="jev-router-test-")
 DEFAULT_CWD = os.path.join(TMP, "workspace")
 PROJECT_CWD = os.path.join(TMP, "demo-game")
+ALIAS_DIR = os.path.join(TMP, "demo-alias")
 CONDITIONS = os.path.join(TMP, "conditions.json")
 for _d in (DEFAULT_CWD, PROJECT_CWD):
     os.makedirs(_d, exist_ok=True)
@@ -37,7 +38,7 @@ with open(CONDITIONS, "w") as _f:
          "when": "Does `user_request` involve deploying to, updating, or debugging the shared staging server?",
          "yes": "It is about deploying or operating staging.", "no": "It is not about staging deploys.",
          "inject": "Staging rule: the staging box is shared; always test the proxy config before reloading it."},
-        {"id": "demo-game", "threshold": 0.6, "cwd_prefix": PROJECT_CWD,
+        {"id": "demo-game", "threshold": 0.6, "cwd_prefix": PROJECT_CWD, "paths": [ALIAS_DIR],
          "when": "Is `user_request` about the Demo Game project?",
          "yes": "It is about the Demo Game.", "no": "It is not about the Demo Game.",
          "inject": "Demo Game notes: Swift 6 + RealityKit; run xcodegen after adding files."},
@@ -63,11 +64,11 @@ def jev_reachable():
     return _JEV_OK
 
 
-def run_hook(prompt=None, cwd=DEFAULT_CWD, raw=None, env_extra=None):
+def run_hook(prompt=None, cwd=DEFAULT_CWD, raw=None, env_extra=None, transcript_path="/tmp/none.jsonl"):
     sid = "test-" + uuid.uuid4().hex[:10]
     if raw is None:
         raw = json.dumps({"hook_event_name": "UserPromptSubmit", "prompt": prompt, "cwd": cwd,
-                          "session_id": sid, "transcript_path": "/tmp/none.jsonl"})
+                          "session_id": sid, "transcript_path": transcript_path})
     env = dict(os.environ, JEV_ROUTER_LOG=LOG_NAME, JEV_ROUTER_CONDITIONS=CONDITIONS)
     env.pop("JEV_ROUTER", None)
     env.update(env_extra or {})
@@ -158,6 +159,113 @@ class NoJev(unittest.TestCase):
         self.assertIsNone(suggested(r["ctx"]))
         self.assertTrue(any("request1" in e for e in r["log"]["errors"]))
         self.assertLess(r["ms"], 8000)
+
+
+NOTE = ("<task-notification>\n<task-id>abc123</task-id>\n<status>completed</status>\n"
+        "<summary>Agent finished building the landing page and ran all the tests</summary>\n</task-notification>")
+OFF = {"TYPESAFE_BASE_URL": DEAD_URL}
+
+
+class Harness(unittest.TestCase):
+    assert_silent_skip = NoJev.assert_silent_skip
+
+    def test_notification_only(self):
+        r = run_hook(NOTE, env_extra=OFF)
+        self.assert_silent_skip(r, "harness_message")
+        self.assertEqual(r["log"]["harness_tags"], ["task-notification"])
+
+    def test_bash_input(self):
+        self.assert_silent_skip(run_hook("<bash-input>ls -la</bash-input>", env_extra=OFF), "harness_message")
+
+    def test_notification_plus_text(self):
+        r = run_hook(NOTE + "\nplease also make the hero video autoplay muted on mobile", env_extra=OFF)
+        self.assertEqual(r["code"], 0)
+        self.assertIsNone(r["log"].get("skipped"))
+        self.assertEqual(r["log"]["harness_tags"], ["task-notification"])
+        self.assertTrue(any("request1" in e for e in r["log"]["errors"]))
+
+
+class Slash(unittest.TestCase):
+    assert_silent_skip = NoJev.assert_silent_skip
+
+    def test_goal_routed(self):
+        r = run_hook("/goal build the checkout flow with Stripe test mode and add tests", env_extra=OFF)
+        self.assertEqual(r["code"], 0)
+        self.assertIsNone(r["log"].get("skipped"))
+        self.assertEqual(r["log"]["slash"], "goal")
+
+    def test_goal_short(self):
+        self.assert_silent_skip(run_hook("/goal ok", env_extra=OFF), "short")
+
+    def test_loop_skipped(self):
+        self.assert_silent_skip(run_hook("/loop 5m check the deploy status on staging every five minutes",
+                                         env_extra=OFF), "slash_command")
+
+    def test_env_extends(self):
+        r = run_hook("/loop 5m check the deploy status on staging every five minutes",
+                     env_extra=dict(OFF, JEV_ROUTER_SLASH="Loop"))
+        self.assertIsNone(r["log"].get("skipped"))
+        self.assertEqual(r["log"]["slash"], "loop")
+
+
+def write_transcript(entries, garbage=False):
+    path = os.path.join(TMP, "t-%s.jsonl" % uuid.uuid4().hex[:8])
+    with open(path, "w") as f:
+        if garbage:
+            f.write("{not json\n" + "x" * 50000 + "\n\x00\n")
+        for e in entries:
+            f.write(json.dumps(e) + "\n")
+    return path
+
+
+def tool_use(path):
+    return {"type": "assistant", "message": {"role": "assistant", "content": [
+        {"type": "text", "text": "reading"},
+        {"type": "tool_use", "id": uuid.uuid4().hex, "name": "Read", "input": {"file_path": path + "/main.swift"}}]}}
+
+
+class Recent(unittest.TestCase):
+    PROMPT = "refactor this function so it is easier to read"
+
+    def run_t(self, tp):
+        r = run_hook(self.PROMPT, cwd=DEFAULT_CWD, env_extra=OFF, transcript_path=tp)
+        self.assertEqual(r["code"], 0)
+        return r
+
+    def test_three_hits_fire(self):
+        r = self.run_t(write_transcript([tool_use(PROJECT_CWD) for _ in range(3)]))
+        self.assertEqual(fired_ids(r["ctx"]), ["demo-game"])
+        self.assertEqual(r["log"]["fired"]["demo-game"]["source"], "recent")
+        self.assertGreaterEqual(r["log"]["recent_hits"]["demo-game"], 3)
+        self.assertIn("recent", r["log"]["latency_ms"])
+
+    def test_two_hits_nothing(self):
+        r = self.run_t(write_transcript([tool_use(PROJECT_CWD) for _ in range(2)]))
+        self.assertEqual(fired_ids(r["ctx"]), [])
+        self.assertEqual(r["log"]["recent_hits"]["demo-game"], 2)
+
+    def test_non_tool_use_ignored(self):
+        entries = []
+        for _ in range(6):
+            entries.append({"type": "user", "message": {"role": "user", "content": [
+                {"type": "tool_result", "content": "see " + PROJECT_CWD}]}})
+            entries.append({"type": "user", "message": {"role": "user", "content": "work in " + PROJECT_CWD}})
+            entries.append({"type": "attachment", "content": PROJECT_CWD})
+            entries.append({"type": "assistant", "message": {"content": [{"type": "text", "text": PROJECT_CWD}]}})
+        r = self.run_t(write_transcript(entries))
+        self.assertEqual(fired_ids(r["ctx"]), [])
+        self.assertNotIn("recent_hits", r["log"])
+
+    def test_missing_and_garbage(self):
+        for tp in (os.path.join(TMP, "missing.jsonl"), write_transcript([], garbage=True), None):
+            r = self.run_t(tp)
+            self.assertEqual(fired_ids(r["ctx"]), [])
+            self.assertFalse(any(e.startswith("recent") for e in r["log"]["errors"]))
+
+    def test_paths_alias(self):
+        r = self.run_t(write_transcript([tool_use(ALIAS_DIR) for _ in range(4)]))
+        self.assertEqual(fired_ids(r["ctx"]), ["demo-game"])
+        self.assertEqual(r["log"]["fired"]["demo-game"]["source"], "recent")
 
 
 class Parser(unittest.TestCase):

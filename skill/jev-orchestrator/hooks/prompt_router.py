@@ -17,6 +17,7 @@ Env:
   JEV_ROUTER=off              disable entirely
   JEV_ROUTER_CONDITIONS=path  alternative conditions file (tests)
   JEV_ROUTER_LOG=name         alternative log name (default "prompts")
+  JEV_ROUTER_SLASH=a,b        extra slash commands whose arguments are routed (besides /goal)
 """
 import glob
 import hashlib
@@ -56,6 +57,22 @@ OUTPUT_MAX = 8000
 DEADLINE_S = 8.0
 JEV_TIMEOUT = 5.0
 MIN_SECOND_CALL_S = 1.5        # skip request 2 if less time than this remains
+TRANSCRIPT_TAIL_BYTES = 400_000
+RECENT_TOOL_CALLS = 30
+RECENT_MIN_HITS = 3
+RECENT_PROB = 0.95
+
+HARNESS_TAGS = (
+    "task-notification",
+    "bash-input", "bash-stdout", "bash-stderr",
+    "local-command-stdout", "local-command-stderr", "local-command-caveat",
+    "command-name", "command-message", "command-args",
+    "ci-monitor-event",
+)
+_HARNESS_RE = re.compile(r"<(%s)(?:\s[^>]*)?>.*?</\1\s*>" % "|".join(re.escape(t) for t in HARNESS_TAGS),
+                         re.DOTALL)
+ROUTED_SLASH = {"goal"}
+_SLASH_RE = re.compile(r"^/([A-Za-z0-9_:.-]+)\s+(.*)$", re.DOTALL)
 
 TIER_RANK = {"project": 0, "user": 1, "plugin": 2, "desktop": 3}
 PRUNE_DIRS = {
@@ -81,14 +98,51 @@ def est_tokens(obj):
 
 
 # ---- skip rules -------------------------------------------------------------
-def skip_reason(prompt):
+def strip_harness(text):
+    """Remove complete harness-tag blocks. Returns (remainder, [tag names removed])."""
+    tags = []
+
+    def _sub(m):
+        tags.append(m.group(1))
+        return ""
+    return _HARNESS_RE.sub(_sub, text or ""), tags
+
+
+def routed_slash():
+    extra = os.environ.get("JEV_ROUTER_SLASH", "")
+    return {c.strip().lstrip("/").lower() for c in extra.split(",") if c.strip()} | ROUTED_SLASH
+
+
+def prepare(prompt, rec=None):
+    """Return (text_to_route, skip_reason_or_None). Logs harness_tags / slash into rec."""
     if os.environ.get("JEV_ROUTER", "").strip().lower() in ("off", "0", "false", "no"):
-        return "disabled"
-    p = (prompt or "").strip()
+        return None, "disabled"
+    text, tags = strip_harness(prompt or "")
+    if tags:
+        if rec is not None:
+            rec["harness_tags"] = sorted(set(tags))
+        if len(text.strip()) < MIN_PROMPT_CHARS:
+            return None, "harness_message"
+    p = text.strip()
+    if p.startswith("/"):
+        m = _SLASH_RE.match(p)
+        if m and m.group(1).lower() in routed_slash():
+            if rec is not None:
+                rec["slash"] = m.group(1).lower()
+            p = m.group(2).strip()
+        else:
+            return None, "slash_command"
+    reason = _basic_skip(p)
+    return (None, reason) if reason else (p, None)
+
+
+def skip_reason(prompt):
+    return prepare(prompt)[1]
+
+
+def _basic_skip(p):
     if not p:
         return "empty"
-    if p.startswith("/"):
-        return "slash_command"
     if len(p) < MIN_PROMPT_CHARS:
         return "short"
     words = re.findall(r"[a-z!']+", p.lower())
@@ -347,6 +401,70 @@ def cwd_match(c, cwd):
     return here == prefix or here.startswith(prefix + "/")
 
 
+def recent_tool_inputs(transcript_path):
+    """Serialized inputs of the last RECENT_TOOL_CALLS assistant tool_use items. [] when unavailable."""
+    if not transcript_path or not isinstance(transcript_path, str) or not os.path.isfile(transcript_path):
+        return []
+    try:
+        with open(transcript_path, "rb") as f:
+            f.seek(0, 2)
+            size = f.tell()
+            start = max(0, size - TRANSCRIPT_TAIL_BYTES)
+            f.seek(start)
+            data = f.read()
+    except OSError:
+        return []
+    lines = data.split(b"\n")
+    if start > 0:
+        lines = lines[1:]
+    out = []
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            e = json.loads(line.decode("utf-8", errors="replace"))
+        except ValueError:
+            continue
+        if not isinstance(e, dict) or e.get("type") != "assistant":
+            continue
+        msg = e.get("message")
+        content = msg.get("content") if isinstance(msg, dict) else None
+        if not isinstance(content, list):
+            continue
+        for item in content:
+            if isinstance(item, dict) and item.get("type") == "tool_use":
+                out.append(json.dumps(item.get("input"), ensure_ascii=False)[:4000])
+    return out[-RECENT_TOOL_CALLS:]
+
+
+def condition_needles(c):
+    needles = []
+    prefix = c.get("cwd_prefix")
+    if isinstance(prefix, str) and prefix:
+        exp = os.path.expanduser(prefix).rstrip("/")
+        needles.append(exp)
+        real = os.path.realpath(exp)
+        if real != exp:
+            needles.append(real)
+    for p in c.get("paths") or []:
+        if isinstance(p, str) and p:
+            needles.append(os.path.expanduser(p))
+    return [n for n in needles if n]
+
+
+def recent_hits(conds, inputs):
+    hits = {}
+    for c in conds:
+        needles = condition_needles(c)
+        if not needles:
+            continue
+        n = sum(1 for s in inputs if any(nd in s for nd in needles))
+        if n:
+            hits[c["id"]] = n
+    return hits
+
+
 # ---- Jev questions ----------------------------------------------------------
 CHOICE_INSTR = ("Which of these skills, if any, is the right one to load to help with `user_request`? "
                 "Pick none if no listed skill is specifically for what the user is asking.")
@@ -422,12 +540,12 @@ def main():
         rec["prompt"] = jevlib.redact(prompt)[:LOG_PROMPT_CHARS]
         rec["session_id"] = payload.get("session_id")
         rec["cwd"] = cwd
-        reason = skip_reason(prompt)
+        text, reason = prepare(prompt, rec)
         if reason:
             rec["skipped"] = reason
             log(LOG_NAME, rec)
             return
-        out = run(jevlib, prompt, cwd, deadline, rec)
+        out = run(jevlib, text, cwd, deadline, rec, payload.get("transcript_path"))
         rec["total_ms"] = int((time.time() - t0) * 1000)
         log(LOG_NAME, rec)
         if out:
@@ -442,7 +560,7 @@ def main():
             pass
 
 
-def run(jevlib, prompt, cwd, deadline, rec):
+def run(jevlib, prompt, cwd, deadline, rec, transcript_path=None):
     t = time.time()
     try:
         roster, cached = load_roster(cwd, deadline - 5.5)
@@ -459,8 +577,19 @@ def run(jevlib, prompt, cwd, deadline, rec):
     for c in conds:
         if cwd_match(c, cwd):
             fired[c["id"]] = (1.0, "cwd")
-        else:
-            ask_conds.append(c)
+    t = time.time()
+    hits = {}
+    try:
+        hits = recent_hits(conds, recent_tool_inputs(transcript_path))
+    except Exception as e:
+        rec["errors"].append("recent: %s" % str(e)[:200])
+    rec["latency_ms"]["recent"] = int((time.time() - t) * 1000)
+    if hits:
+        rec["recent_hits"] = hits
+    for c in conds:
+        if c["id"] not in fired and hits.get(c["id"], 0) >= RECENT_MIN_HITS:
+            fired[c["id"]] = (RECENT_PROB, "recent")
+    ask_conds = [c for c in conds if c["id"] not in fired]
 
     state = {"user_request": jevlib.redact(prompt)[:PROMPT_CHARS]}
     qs, nchunks, desc_chars = request1_questions(jevlib, roster, ask_conds, state)
