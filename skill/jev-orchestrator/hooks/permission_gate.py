@@ -112,7 +112,14 @@ OBFUSCATION = re.compile(r"\$\(|`|\beval\b|<<|\bbase64\b|\bxxd\s+-r\b|\\x[0-9a-f
 
 # ---------- helpers ----------
 
+# In bypassPermissions mode the user chose "no prompts": "ask" becomes a silent pass (still logged);
+# only "deny" (hard catastrophic rules / Jev deny) is enforced.
+BYPASS = False
+
+
 def emit(decision, reason):
+    if decision == "ask" and BYPASS:
+        return
     print(json.dumps({"hookSpecificOutput": {
         "hookEventName": "PreToolUse",
         "permissionDecision": decision,
@@ -387,6 +394,8 @@ def main():
     tool_input = data.get("tool_input") if isinstance(data.get("tool_input"), dict) else {}
     cwd = data.get("cwd") if isinstance(data.get("cwd"), str) else os.getcwd()
     mode = data.get("permission_mode") or ""
+    global BYPASS
+    BYPASS = mode == "bypassPermissions" or os.environ.get("JEV_GATE_BYPASS", "").lower() in ("1", "on", "true", "yes")
     gate_off = os.environ.get("JEV_GATE", "").lower() in ("off", "0", "false", "no")
 
     if tool in ("Write", "Edit", "MultiEdit", "NotebookEdit"):

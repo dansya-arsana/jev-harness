@@ -39,6 +39,15 @@ def api_key():
                         value = line.split("=", 1)[1].strip().strip('"').strip("'")
                         if value:
                             return value
+    # Windows: a key set with setx lives in HKCU\Environment and may predate the running shell.
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as k:
+            value = winreg.QueryValueEx(k, "TYPESAFE_API_KEY")[0]
+            if value:
+                return value
+    except Exception:
+        pass
     raise JevError("TYPESAFE_API_KEY not found (env var or " + ", ".join(p for p in KEY_FILES if p) + ")")
 
 

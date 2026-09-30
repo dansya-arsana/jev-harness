@@ -36,9 +36,9 @@ def run(payload, env=None, raw=None):
     return p.returncode, (json.loads(out)["hookSpecificOutput"] if out else None), ms
 
 
-def bash(cmd, **kw):
+def bash(cmd, mode="default", **kw):
     return run({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": cmd},
-                "cwd": CWD, "permission_mode": "bypassPermissions"}, **kw)
+                "cwd": CWD, "permission_mode": mode}, **kw)
 
 
 def decision(res):
@@ -87,6 +87,18 @@ class HardRules(unittest.TestCase):
     def test_gate_off_keeps_hard_deny(self):
         self.assertDecision("rm -rf ~", "deny", env={"JEV_GATE": "off"})
         self.assertDecision("git push --force origin main", None, env={"JEV_GATE": "off"})
+
+
+class BypassMode(unittest.TestCase):
+    """bypassPermissions = no prompts: ask becomes a silent pass, hard denies still hold."""
+
+    def test_ask_is_silent_in_bypass(self):
+        cmd = "git push --force origin main"
+        self.assertEqual(decision(bash(cmd)), "ask")
+        self.assertIsNone(decision(bash(cmd, mode="bypassPermissions")))
+
+    def test_hard_deny_still_enforced_in_bypass(self):
+        self.assertEqual(decision(bash("rm -rf ~", mode="bypassPermissions")), "deny")
 
 
 class AskRules(unittest.TestCase):
