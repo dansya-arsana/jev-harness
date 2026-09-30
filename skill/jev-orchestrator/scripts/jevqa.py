@@ -26,7 +26,19 @@ from urllib.parse import urljoin, urlparse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO_ENV = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))), ".env")  # <repo>/.env
-CHROME = os.environ.get("JEVQA_CHROME", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+def _default_chrome():
+    if sys.platform != "win32":
+        return "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    # Windows: Chrome if installed, else Edge (same Chromium CDP), which ships with Windows.
+    for rel in (r"Google\Chrome\Application\chrome.exe", r"Microsoft\Edge\Application\msedge.exe"):
+        for base in (os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)"), os.environ.get("LOCALAPPDATA")):
+            if base:
+                if os.path.isfile(os.path.join(base, rel)):
+                    return os.path.join(base, rel)
+    return "chrome.exe"
+
+
+CHROME = os.environ.get("JEVQA_CHROME") or _default_chrome()
 SECRET = re.compile(r"password|card|cvv|token|secret", re.I)
 DEFAULT_HOSTS = ["localhost", "127.0.0.1"]
 DEFAULT_VIEWPORTS = [{"name": "desktop", "width": 1440, "height": 900}]
