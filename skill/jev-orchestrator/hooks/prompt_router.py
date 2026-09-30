@@ -396,9 +396,9 @@ def cwd_match(c, cwd):
     prefix = c.get("cwd_prefix")
     if not prefix or not cwd:
         return False
-    prefix = os.path.realpath(os.path.expanduser(prefix)).rstrip("/")
-    here = os.path.realpath(cwd)
-    return here == prefix or here.startswith(prefix + "/")
+    prefix = os.path.normcase(os.path.realpath(os.path.expanduser(prefix))).rstrip("/\\")
+    here = os.path.normcase(os.path.realpath(cwd))
+    return here == prefix or here.startswith(prefix + os.sep)
 
 
 def recent_tool_inputs(transcript_path):
@@ -450,7 +450,16 @@ def condition_needles(c):
     for p in c.get("paths") or []:
         if isinstance(p, str) and p:
             needles.append(os.path.expanduser(p))
-    return [n for n in needles if n]
+    out = []
+    for n in needles:
+        if not n:
+            continue
+        # Tool inputs are matched in their json.dumps form, where each Windows backslash is
+        # doubled; also accept forward-slash spellings of the same path.
+        for v in (n, n.replace("\\", "\\\\"), n.replace("\\", "/")):
+            if v not in out:
+                out.append(v)
+    return out
 
 
 def recent_hits(conds, inputs):

@@ -43,6 +43,12 @@ cp .env.example .env            # put your TYPESAFE_API_KEY in it
 ./install.sh --hooks            # links the skill + agents into ~/.claude and registers both hooks
 ```
 
+**Windows:** put the key in `~/.config/typesafe/.env` (the installer creates it), then run
+`powershell -ExecutionPolicy Bypass -File install.ps1`. It junctions the skill, copies the agents, registers the
+hooks with your full `python.exe` path (so no `python3` alias is needed), and adds the required-stack rules from
+[`config/global-rules.md`](config/global-rules.md) to `~/.claude/CLAUDE.md` between markers. `jevqa.py` finds
+Chrome or Edge on its own; set `JEVQA_CHROME` to override.
+
 `install.sh` links everything from this repo into `~/.claude`. It moves any real files it would replace into `~/.claude/backups/` and backs up `settings.json` before editing it. It's safe to re-run. `./uninstall.sh` removes the links and hook entries and leaves your rules and logs alone.
 
 Then:
