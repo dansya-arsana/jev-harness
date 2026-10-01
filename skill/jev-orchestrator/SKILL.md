@@ -1,69 +1,94 @@
 ---
 name: jev-orchestrator
-description: Use Jev (TypeSafe) to decide how to split and delegate work to subagents. Use when a task has several independent parts, when about to spawn a subagent, when running a goal-driven or multi-round loop, or when an attempt keeps failing. Jev decides whether each subtask should be delegated, which tier (scout/analyst read-only; builder/engineer/debugger/architect for edits; ultracode for Workflow orchestration), whether it can run in parallel, whether it duplicates earlier work, and whether the agent is stuck. Trigger: "/jev-orchestrator", "delegate with jev", "route this with jev", "split this into subagents".
+description: "Use Jev (TypeSafe) to split and delegate work to JEV subagents with deterministic model routing. Use when a task has several independent parts, when about to spawn a subagent, when running a goal-driven or multi-round loop, or when an attempt keeps failing. Runs a preflight of the jev-* agents, routes each subtask (fast path straight to the builder, or architect plan first), persists plans, validates structured handoffs, and escalates by failure category. Triggers include /jev-orchestrator, delegate with jev, route this with jev, split this into subagents."
 ---
 
-# Jev orchestrator
+# Jev orchestrator (vNext)
 
-You (the main agent) plan and split the work. **Jev makes the small decisions about each piece.** Subagents do the work and return short results. Code, not Jev, holds the policy: the thresholds live in `scripts/jev.py`.
+You (the main agent) plan and split the work. **Jev answers the small questions, code holds the policy, and `config/agents.json` holds the routing**: model, effort, write capability, fallbacks (all `null`), context policy, escalation table and guardrails. `scripts/sync_agents.py` writes the agent files from it.
 
-Helper: `python3 ~/.claude/skills/jev-orchestrator/scripts/jev.py <command>`. Each command prints one JSON object. A route call is ~800 Jev input tokens and ~1.3 s, so ask freely.
+Helper: `python3 ~/.claude/skills/jev-orchestrator/scripts/jev.py <command>`. Each command prints one JSON object (preflight prints a table unless `--json`). A route call is ~800 Jev input tokens and ~1.3 s.
 
-## Tiers
+## 0. Preflight first, every task
 
-**Owner rule for effort:**
-- **high, xhigh ("extra"), max and ultracode:** only for decisions, architecture thinking and orchestration.
-- **medium:** review and checks.
-- **code:** low by default. Medium or high only when it's really needed, never as the starting point.
+```bash
+python3 ~/.claude/skills/jev-orchestrator/scripts/jev.py preflight        # required agents; --all for all nine
+```
 
-Every tier runs `claude-opus-5-5`, pinned in the agent file.
+It checks each agent file in `~/.claude/agents` (project `.claude/agents` shadows it): file exists, frontmatter parses (strict: an unquoted `: ` or ` #` in a value fails, because Claude Code then silently skips the agent), `name` matches the file, `model` and `effort` equal the config, tools match the write flag, the body is not empty, and no fallback is configured.
 
-| tier | subagent_type | effort | ladder | for |
-|---|---|---|---|---|
-| scout | `jev-scout` | low | read | lookups, quick read-only answers |
-| analyst | `jev-analyst` | high | read | investigation, root-cause finding (decision thinking, no edits) |
-| advisor | `jev-advisor` | max | read | design questions that only need a recommendation |
-| architect | `jev-architect` | max | plan | the implementation plan for design, hard or high-stakes work; never edits |
-| reviewer | `jev-reviewer` | medium | read | review and checks of finished work |
-| qa | `jev-qa` | low | read | browser QA of local/staging pages: screenshots plus DOM checks via `jevqa.py` |
-| builder | `jev-builder` | **low** | write | **default coder**: ordinary edits, and implementing a plan |
-| engineer | `jev-engineer` | medium | write | substantial multi-file changes, or a stuck builder |
-| debugger | `jev-debugger` | high | write | only when builder and engineer got stuck on the same problem |
-| ultracode | Workflow | orchestration | orchestrate | planning and review fan-out; coding agents inside it pass `opts.effort: 'low'`, and reviewers `'medium'` |
+- **FAIL (exit 1): stop.** Show the user the table and the `JEV PREFLIGHT FAILED` message. Do not start the task and **never spawn a substitute** (no engineer for a missing builder, no analyst for a missing reviewer).
+- **PASS is about files, not the live registry.** Claude Code registers agents when the session starts. If a file was missing or invalid at session start, the agent stays unregistered until the user restarts Claude Code, even if preflight passes now. If the Agent tool says "Agent type 'jev-x' not found", stop and tell the user to restart. Don't substitute.
 
-**Two-step routing:** when `route` returns `plan_first`, run the planner first (read-only, high or above), then give its plan verbatim to the implementer, which is `jev-builder` at low effort. Only raise coding effort through a stuck check: builder (low) → engineer (medium) → debugger (high) → replan with the architect.
+## Roles (from config/agents.json)
+
+| Agent | Model | Effort | Capability | Purpose |
+|---|---|---:|---|---|
+| `jev-architect` | Opus 5.5 | max | read-only | architecture, planning, replan. Returns the plan as text and never writes files |
+| `jev-advisor` | Sonnet 5.5 | high | read-only | design alternatives, a recommendation |
+| `jev-analyst` | Sonnet 5.5 | high | read-only | investigation, code analysis. **Not a reviewer** |
+| `jev-builder` | Sonnet 5.5 | low | write | default implementation: the persisted plan, or a fast-path task |
+| `jev-engineer` | Sonnet 5.5 | medium | write | complex implementation, builder escalation |
+| `jev-debugger` | Opus 5.5 | high | write | hard debugging, last-resort rescue |
+| `jev-reviewer` | Sonnet 5.5 | medium | read-only | independent review (review contract) |
+| `jev-qa` | Sonnet 5.5 | low | browser | QA and verification via `jevqa.py` |
+| `jev-scout` | Sonnet 5.5 | low | read-only | repo, file and symbol lookup |
+
+SONNET executes, inspects and verifies; OPUS decides and rescues. Model IDs are `claude-sonnet-5-5` / `claude-opus-5-5`.
+
+## Spawning: the model is never ambient
+
+- **Agent tool:** pass `subagent_type` only. The agent file pins the model from config. If you pass `model`, it must be exactly the config ID (`claude-sonnet-5-5` for a Sonnet role). **Never pass an alias** (`opus`/`sonnet`/`haiku`). Aliases follow settings remaps (`ANTHROPIC_DEFAULT_*_MODEL`), and the dispatch guard denies them.
+- **Workflow `agent()` calls:** always pass `opts.model` set to the config model ID of the role the agent plays (`route` returns `worker_model` for ultracode), plus `opts.effort` from the route. Workflow agents otherwise inherit the session model.
+- Put `[jev:task=<task_id>]` (route returns it as `task_marker`) in every prompt of a routed task. The dispatch guard uses it to enforce the route.
+- Prompts carry everything the subagent needs, because it doesn't see this conversation: the task, the persisted plan path, the context block, and earlier BLOCKED reports. Don't tell agents to "report terse" or "use graphify first": their files already say so.
 
 ## Loop
 
-1. **Split** the request into subtasks. Write each one so it stands alone: what to do, where, and how to know it's done.
-2. **Dedupe** each subtask before starting it: `jev.py dedupe "<subtask>"`. If `duplicate_of` is set, don't start it. Reuse the finished result (`status: done`) or wait for the in-flight one. Otherwise it is registered with an id (`registered`). The ledger is `./.jev/subgoals.jsonl` in the current project.
-3. **Route** it: `jev.py route "<subtask>" --context "<only the facts the subagent needs>"`. The output has `tier`, `subagent_type`, `effort`, `ladder`, `delegate`, `via`, `parallel_safe`, `depth`, `breadth`, `signals`, `reasons`.
-   - `via: main` (`delegate: false`): do it yourself, or rewrite the subtask with the missing context and route again.
-   - `via: subagent`: spawn `subagent_type` **without a `model` parameter**. The agent files pin `claude-opus-5-5`. Passing an alias (`opus`/`sonnet`/`haiku`) would override that, and if your settings remap aliases (for example `ANTHROPIC_DEFAULT_OPUS_MODEL`) the subagent would run on whatever the alias points to. Put everything the subagent needs in the prompt, because it doesn't see this conversation. Ask for a short result: what changed, where, and anything uncertain.
-   - `via: workflow` (tier `ultracode`, `subagent_type: null`): don't spawn one subagent. Load the `workflow-authoring` skill, then author and run a Workflow script that fans out agents and adversarially verifies their results. `workflow_shape` (understand / investigate / review read-only; audit / migrate write) and `workflow_hint` suggest a structure. In the script's `agent()` calls, **always pass `opts.model: 'claude-opus-5-5'`**: Workflow agents otherwise inherit the session's model alias, which follows any alias remapping in your settings. Never pass an alias. Pass `opts.effort` set to the returned `effort` (the worker tier's effort, see `worker_tier`). `workflow_shape` `investigate` and `understand` are read-only: no writer agents. Writers must never share files.
-   - `parallel_safe: true` means the subtask is read-only, so launch it together with other parallel-safe subtasks in one message. Subtasks that edit files run **one at a time**, never two writers on the same files.
-4. **Mark done**: `jev.py done <id>` once the result is back and checked.
-5. **Stuck check**: if a subtask failed twice, or tests keep failing for the same reason, save the recent output to a file and run `jev.py stuck --state @<file> --tier <tier>`. If `escalate: true`, re-run it with `next_tier` / `subagent_type` and tell the new agent what already failed. Escalation stays on the task's own ladder: scout -> analyst -> analyst, and code builder (low) -> engineer (medium) -> debugger (high) -> architect replans. A stuck architect returns `next_tier: ultracode`, meaning orchestrate it with a Workflow.
-6. **Review**: for non-trivial changes, finish with `jev-reviewer` on the diff.
-7. **Verify with real checks.** Jev's answers are always well-formed but can still be wrong. "Done" means tests pass or the build succeeds, not that Jev thinks it's done.
+1. **Split** the request into subtasks that stand alone: what to do, where, and how to know it's done.
+2. **Dedupe:** `jev.py dedupe "<subtask>"`. If `duplicate_of` is set, reuse that result or wait for it. The ledger is `./.jev/subgoals.jsonl`.
+3. **Route:** `jev.py route "<subtask>" [--context "<facts>"] [--task-id T] [--files a.ts]`. The output adds `task_id`, `task_marker`, `fast_path` (+ `fast_path_checks`), `route`, `sequence` (agent / model / effort / purpose per step), `next_agent`, and `model`/`effort` from config. The route is recorded in `~/.claude/jev/last_route.json`.
+   - `route: fast`: only when every check holds (one file expected; no architecture, schema, persistence, public-API or concurrency change; requirements clear; low stakes; small). Spawn **`jev-builder`** directly. No architect, no Opus. Then optionally `jev-reviewer`, and `jev-qa` for UI. If the builder reports the task is not trivial (BLOCKED), escalate (step 6).
+   - `route: planned`: (a) spawn `plan_first.planner` (normally `jev-architect`). (b) **You persist its plan:** `jev.py plan save --task T --stdin` (or `--from-file`), which writes `.jev/plans/T.md` and warns on missing sections. Never spawn a builder or engineer just to save markdown; the architect is read-only and never writes. (c) Spawn `plan_first.implementer` (`jev-builder`, low) in a fresh context with the task, the plan path and the context block. (d) Then `jev-reviewer`, then `jev-qa` when there is something runnable.
+   - `route: direct`: a read-only task. Spawn `subagent_type` (scout / analyst / reviewer / advisor). `parallel_safe: true` subtasks can launch together. Writers run **one at a time**, never two on the same files.
+   - `route: workflow` (tier `ultracode`): load the `workflow-authoring` skill and author a Workflow (`workflow_shape`, `workflow_hint`), with `opts.model` set to `worker_model` and `opts.effort` set to `effort` in every `agent()`. Read-only shapes have no writer agents.
+   - `via: main`: do it yourself, or rewrite the subtask with the missing context and route again.
+   - Jev unavailable (`{"error", "fallback"}`, exit 1): don't guess Jev's answer. Follow `fallback`: write work takes the planned route unless it is a trivial one-file change, and you tell the user Jev was unavailable.
+4. **Context (graph first):** before spawning, `jev.py context prepare --task-id T --role <agent> --task "<subtask>" [--files a,b] [--refresh]`. It returns `{pack_path, context_block, graph_status, fallback, reused}`. Paste `context_block` into the prompt (or hand over `pack_path`). Packs are reused across the route (the builder reuses the architect's pack); use `--refresh` only when the repo changed. If `graph_status` is `unavailable`, the wrapper failed soft: give the agent the file list and say so. A `[JEV CONTEXT]` line is logged whenever a fallback ran.
+5. **Handoffs are artifacts, not memory.** Contracts live in `config/schemas/`. Validate them with `jev.py handoff validate --kind plan|completion|failure|review|qa FILE` (JSON, or YAML with PyYAML); `jev.py handoff template --kind K` prints a skeleton. Agents report in the terse protocol (`STATUS: DONE` with CHANGED / WHY / TEST / RISK / NEXT, or `STATUS: BLOCKED` with CATEGORY / FOUND / EVIDENCE / NEXT). `jev.py report lint FILE` checks one. Persisted docs stay normal prose.
+6. **Escalate by failure category, never by substitution.** When an agent reports BLOCKED, or `jev.py stuck --state @<file> --tier <tier>` says `escalate: true`, classify the failure and run
+   `jev.py escalate --task T --from <role> --category <category> [--evidence path ...]`
+   | category | next |
+   |---|---|
+   | `implementation_complexity` | `jev-engineer` (engineer -> debugger -> architect up the ladder) |
+   | `hard_debugging` | `jev-debugger` directly |
+   | `invalid_plan` | `jev-architect` **replan directly**, with no engineer or debugger attempt |
+   | `requirement_ambiguity` | `orchestrator`: stop coding. Use analyst/advisor only if it can be inferred safely, else ask the user |
+   | `environment_failure` | `orchestrator`: fix the environment or stop |
+   | `test_failure` | the same coder, twice, then one step up |
+   Guardrails from config: `max_replans` (2) and `max_debugger_attempts` (2). When one is hit, `next_agent: orchestrator` and you stop and report to the user. State lives in `.jev/state/T.json`. The escalation is recorded, so the dispatch guard now allows the new agent. Give it the BLOCKED report and what already failed.
+7. **Review:** non-trivial changes always end with **`jev-reviewer`** (never `jev-analyst` as a stand-in). Give it the task, the plan path, the acceptance criteria, `git diff`, the test results and a context pack, and nothing of the builder's reasoning. It returns the review contract. `changes_required` goes back to the builder (major/critical issues may need the engineer). `pass` goes to `jev-qa`.
+8. **Mark done:** `jev.py done <id>`. **Verify with real checks**: "done" means the tests pass or the build succeeds.
 
-## Context packs: search once, share with every subagent
+## Dispatch guard (hooks/dispatch_router.py, PreToolUse `Agent|Task`)
 
-When two or more subagents (including the final reviewer) will work in the same area, gather the code once instead of letting each one re-explore. Measured effect (see the repo's `docs/REPORT.md`): slices cut tool calls by about half and wall time by 25–38%, but a full 8k-token slice can cost *more* tokens than letting an agent grep a small, well-organized codebase (+42–59% on Click). Use packs when speed matters, when several agents share one slice, or on large or unfamiliar code. The default slice is outline-first (4k budget, only clearly relevant chunks in full); raise `--budget` when speed matters more than tokens.
+For every `jev-*` dispatch it **denies**:
+- an agent that fails the per-agent preflight (missing, invalid frontmatter, model/effort off config);
+- a call with an alias `model` or a model that differs from config;
+- a non-Opus role resolving to Opus (guardrail);
+- a different jev agent than the task's recorded route without a recorded escalation ("recorded escalation required").
 
-Helper: `python3 ~/.claude/skills/jev-orchestrator/scripts/jevpack.py <command>` (run from the project root; packs go to `./.jev/packs/`).
+It **warns** (systemMessage) when an Opus or max-effort role is outside `guardrails`. Every jev-* dispatch appends `{task_id, role, model, effort, reason, attempt}` to `~/.claude/jev/routing.log` and prints the `[JEV]` block on stderr. If `config/agents.json` can't be read, the guard fails open with a loud stderr/log message. `JEV_GUARD=off` disables the guard.
 
-1. **Find the files once.** Grep/Glob yourself, or one `jev-scout`, then write the paths to a file.
-2. **Build:** `jevpack.py build --name <n> --task "<overall task>" --files-from <list>` (or pass paths/globs, or `--grep REGEX`). No model is used; it chunks the files by function/class and takes about 0.1 s. Secrets files are skipped.
-3. **Slice per subtask:** `jevpack.py slice <n> --subtask "<subtask>" > .jev/packs/<n>-<k>.md` (default budget 4000 tokens). Jev scores every chunk for this subtask: essential chunks in full with real line numbers, background chunks as one-line outlines, the rest hidden. That's about 3 s and under a cent per slice.
-4. **Hand it over by path, not by pasting:** in the subagent prompt write "First Read `<abs path to slice>`; start from it and open other files only if something is missing." That keeps the slice out of your own context.
-5. Give the reviewer a slice too (subtask = "review this change" plus the diff summary).
+After the guard, the older re-route still runs for dispatches without a recorded route: Jev may swap the tier on the same read/write side (depth confidence >= 0.6, never to debugger), and only if the new pick also passes the guard. `[jev:keep]` keeps your pick. `JEV_DISPATCH=apply|shadow|off` controls the re-route only. `jev.py outcomes` / `jev.py label <id|last> ok|too_low|too_high` measure it.
 
-Skip packs for a single small task, or when the files are already known and few. If `slice` errors, fall back to giving the subagent the file list from `jevpack.py info <n>`.
+## Context packs (jevpack.py)
+
+`jev.py context` (jevctx: graphify -> graphq -> pack) is the default. `jevpack.py` still works for manual packs: `jevpack.py build --name <n> --task "<task>" --files-from <list>`, then `jevpack.py slice <n> --subtask "<subtask>" > .jev/packs/<n>-<k>.md`, and hand the slice over by path ("First Read `<path>`; open other files only if something is missing"). Don't run both for the same agent: one context system per handoff.
 
 ## Browser QA (jev-ultrafast + jev-qa)
 
-`scripts/jevqa.py` pairs browser-use's jev-ultrafast (Jev picks each browser action) with the `jev-qa` reviewer (Opus 5.5, low effort), which reads every screenshot and the report. One-time setup:
+`scripts/jevqa.py` pairs browser-use's jev-ultrafast with the `jev-qa` reviewer (Sonnet 5.5, low effort), which reads the screenshots and the report. One-time setup:
 
 ```bash
 git clone https://github.com/browser-use/jev-ultrafast.git ~/Documents/Tools/jev-ultrafast
@@ -72,49 +97,31 @@ cd ~/Documents/Tools/jev-ultrafast && uv sync
 
 Run: `uv run --project ~/Documents/Tools/jev-ultrafast python scripts/jevqa.py run <scenario.json> [--out DIR] [--headful]`. The default out dir is `./.jev/qa/<timestamp>/`.
 
-- The QA Chrome is always a throwaway profile: a fresh temp `--user-data-dir` on its own debugging port, headless unless `--headful`. It never attaches to your normal Chrome. It is killed and its profile deleted on exit, including on errors and Ctrl-C.
-- Typed text comes from a local shim that answers only from the flow's `values` map (`{"<label regex>": "<value>"}`). Anything it doesn't match gets `{"text": null}`, and nothing is typed. Values whose labels look secret (`password|card|cvv|token|secret`) are masked in the report.
+- The QA Chrome is always a throwaway profile on its own debugging port, headless unless `--headful`. It never attaches to your normal Chrome, and it is killed and its profile deleted on exit.
+- Typed text comes only from the flow's `values` map (`{"<label regex>": "<value>"}`). Anything unmatched types nothing. Values whose labels look secret are masked in the report.
 - Flows whose host isn't in `allow_hosts` (default: localhost only) are refused. A run that navigates off those hosts stops with `left_allowed_hosts`.
 - Scenario: `{"base_url", "allow_hosts", "viewports": [{name, width, height, mobile?}], "flows": [{name, path, goal?, values?, max_steps? (25), expect_text?, expect_url?, viewports?, max_slices? (10), wait_ms? (0), init_script?, wait_for?, wait_for_loader? (true), loader_timeout_ms? (10000), scroll_to?}], "init_script"?, "wait_for_loader"?}`. A flow with no `goal` is capture-only.
-- Intro loaders: after load, jevqa waits for the page to stop looking busy. Busy means still loading, `aria-busy`, every visible control inside `[inert]`/`[aria-hidden]`, or a full-screen fixed overlay with no controls. It waits up to `loader_timeout_ms`, then goes on either way. The result is recorded as `loader` (`detected`, `reason`, `waited_ms`, `cleared`), and a capture flow whose loader never cleared fails `checks.loader`. `wait_for_loader: false` (scenario or flow) turns it off. `wait_for` (a CSS selector) then polls until that element is visible, for up to 15 s; a timeout is a failed `wait_for` check. After that, jevqa sleeps `wait_ms` (0-15000). All of this happens before capture, and for goal flows before the agent's first decision; the agent then re-observes the page. `init_script` (a string, at scenario level or per flow; a flow's own value overrides the scenario one and `""` turns it off) is injected with `Page.addScriptToEvaluateOnNewDocument` before navigation. Use it only for loaders that never clear on their own.
-- Goal flows: jevqa swaps jev-ultrafast's `Browser` for a subclass, inside the jevqa process only, while the `Agent` is being constructed. The subclass does four things:
-  - It runs the agent at the flow's first listed viewport (else the scenario's first). jev-ultrafast on its own always uses 1120×780 desktop.
-  - It scrolls about 0.8 of a screen per step, with the wheel at the viewport centre.
-  - It registers the `init_script` just before the first navigation.
-  - It gives one JS `click()` to a disclosure (`<summary>` or `aria-expanded`) whose state didn't change after a real click. These are logged in `fallback_clicks`; report each one as a bug.
-
-  `scroll_to` (a CSS selector) starts a goal flow at that section. Use it unless finding the section is itself the test, because jev-ultrafast rarely scrolls to look for something it can't see.
+- Intro loaders: jevqa waits until the page stops looking busy (still loading, `aria-busy`, all controls inert, or a full-screen overlay), up to `loader_timeout_ms`, and records `loader` (`detected`, `reason`, `waited_ms`, `cleared`). `wait_for` polls a CSS selector (up to 15 s), then `wait_ms` sleeps. `init_script` (scenario or flow; `""` turns it off) runs before navigation. Use it only for loaders that never clear.
+- Goal flows run at the flow's first viewport, scroll about 0.8 screens per step, and give one JS `click()` to a disclosure that ignored a real click (logged in `fallback_clicks`; report each one as a bug). Use `scroll_to` unless finding the section is itself the test.
 
   ```json
   {"base_url": "http://localhost:3002",
    "viewports": [{"name": "desktop", "width": 1440, "height": 900}, {"name": "mobile", "width": 390, "height": 844, "mobile": true}],
    "flows": [{"name": "home", "path": "/", "wait_for": "h1", "max_slices": 4},
              {"name": "faq", "path": "/", "viewports": ["desktop"], "scroll_to": "#faq", "max_steps": 8,
-              "goal": "Expand the FAQ question 'How are prompts checked?'. Do not submit any form."},
-             {"name": "menu", "path": "/", "viewports": ["mobile"], "max_steps": 6,
-              "goal": "Open the site menu using the Menu button. Do not submit any form."}]}
+              "goal": "Expand the FAQ question 'How are prompts checked?'. Do not submit any form."}]}
   ```
-- Output: `<flow>-<viewport>-NN.png` slices, one `<flow>-<viewport>-sheet.jpg` contact sheet per flow and viewport (the slices in reading order, 3 columns, 480px tiles, 6px black gutter; listed first in `report.md`), plus `report.json` and `report.md`. The checks cover horizontal overflow, missing image alt text, unnamed buttons and links, text under 11px, `expect_text`, `expect_url`, console errors and the loader. Goal flows also report:
-  - `untouched_selects`: `<select>`s still on their first option (a hint, not a failure);
-  - `agent_viewport`, `loader`, `scroll_to` and `fallback_clicks`;
-  - `initial_labels` / `final_labels`: what the agent could click before and after the run. Read `initial_labels` first when a flow is BLOCKED at 0 steps.
-
-## Live dispatch routing
-
-`hooks/dispatch_router.py` (PreToolUse, matcher `Agent|Task`) re-routes each jev-* dispatch through `jev.py`'s policy, so the tier you pick may be swapped before the agent starts.
-- Only picks with a routable tier take part (scout, analyst, builder, engineer, debugger, architect, reviewer, advisor). Others (jev-qa, Explore, general-purpose, ...) are just logged.
-- Jev's pick replaces yours only if it is a single subagent (not main, ultracode or plan_first), on the same side (read/plan vs write), `depth_confidence >= 0.6`, and not jev-debugger.
-- Put `[jev:keep]` in the prompt to keep your pick (it is still logged).
-- `JEV_DISPATCH=apply` (default), `shadow` (log only) or `off`.
-- `jev.py outcomes [--days 7] [--json]` joins dispatch logs with subagent transcripts: duration, tokens, errors, stuck/escalated signals, agreement and labeled accuracy.
-- `jev.py label <tool_use_id|last> ok|too_low|too_high [--note TEXT]` records whether the tier that ran was right; the latest label wins.
+- Output: `<flow>-<viewport>-NN.png` slices, a `<flow>-<viewport>-sheet.jpg` contact sheet per flow and viewport, `report.json` and `report.md`. The checks cover overflow, alt text, unnamed controls, text under 11px, `expect_text`/`expect_url`, console errors and the loader. Goal flows add `untouched_selects`, `agent_viewport`, `scroll_to`, `fallback_clicks` and `initial_labels`/`final_labels` (read `initial_labels` first when a flow is BLOCKED at 0 steps).
 
 ## Rules
 
-- Don't route trivial one-step requests. Just do them. This skill is for multi-part work.
-- Show the user the routing table (subtask -> tier/effort, and why) before spawning more than 3 subagents or starting an ultracode Workflow.
-- `jev.py report [--days 7] [--json]` summarizes the gate, prompt-router and routing logs, with a "worth a look" list (Jev errors, slow prompts, commands the gate keeps asking about). Run it when the user asks how the Jev hooks are doing or wants to tune thresholds.
-- After a routed agent completes, label it: `jev.py label <id> ok|too_low|too_high` (`last` for the latest dispatch). Those labels are the accuracy numbers.
-- Every decision is logged to `~/.claude/jev/decisions.jsonl`. When a routing turns out wrong, say so, because that log is how the thresholds get tuned.
-- The API key is read from `TYPESAFE_API_KEY`, then `~/.config/typesafe/.env`, then `.env` at the root of this repo. Never print it. Task text is redacted before it is sent or logged.
-- If the helper returns `{"error": ..., "fallback": ...}` (exit 1), don't guess Jev's answer. Follow `fallback`, use your own judgment, and tell the user Jev was unavailable.
+- Don't route trivial one-step requests that you can do yourself. This skill is for multi-part work.
+- Show the user the routing table (subtask -> route, agent, model/effort, and why) before spawning more than 3 subagents or starting a Workflow.
+- No silent substitution, ever. A missing or unusable agent stops the task. The only exception is a fallback explicitly configured in `config/agents.json`, and preflight rejects those today.
+- `jev.py report [--days 7] [--json]` summarizes the gate, prompt-router and routing logs. `~/.claude/jev/routing.log` shows the model and effort of every jev dispatch, which makes accidental Opus use visible.
+- After a routed agent completes, label it: `jev.py label <id|last> ok|too_low|too_high`.
+- The API key is read from `TYPESAFE_API_KEY`, then `~/.config/typesafe/.env`, then `.env` at the repo root. Never print it.
+
+## Rollback
+
+`config/agents.pre-vnext.json` is the routing from before vNext: every agent on `claude-opus-5-5`, advisor at max. To roll back the model split: copy it over `config/agents.json`, run `python scripts/sync_agents.py`, re-run `./install.sh`, then restart Claude Code. **Keep** the registry fix (quoted descriptions), preflight, the dispatch guard and routing.log: they read whichever config is active, so they keep validating and logging after a rollback. `JEV_GUARD=off` is the emergency switch for the guard alone.

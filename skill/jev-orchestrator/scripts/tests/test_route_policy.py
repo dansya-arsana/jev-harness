@@ -56,7 +56,9 @@ class WriteTiers(unittest.TestCase):
 
     def test_advice_only_design_question_is_read_only_advisor(self):
         tier, d, _ = route("Oban or Broadway for background jobs? Recommend one.", depth=3.0, design=0.98, read_only=0.94)
-        self.assertEqual((tier, d["ladder"], d["effort"]), ("advisor", "read", "max"))
+        # effort comes from config/agents.json (vNext: advisor is Sonnet / high)
+        self.assertEqual((tier, d["ladder"], d["effort"]), ("advisor", "read", jev.TIERS["advisor"]["effort"]))
+        self.assertEqual(jev.TIERS["advisor"]["effort"], jev.load_config()["agents"]["jev-advisor"]["effort"])
 
     def test_design_is_architect(self):
         self.assertEqual(route(depth=2.9, design=0.98, read_only=0.58)[0], "architect")

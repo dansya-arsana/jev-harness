@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "jev_failure.schema.json",
+  "title": "JEV implementation failure handoff (vnext-plan section 10, 'Failure Contract')",
+  "description": "Feeds `jev.py escalate --category <category>`. invalid_plan routes straight to jev-architect.",
+  "type": "object",
+  "required": [
+    "task_id",
+    "agent",
+    "category",
+    "completed",
+    "blocked_by",
+    "recommended_route",
+    "evidence"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agent": {
+      "type": "string",
+      "pattern": "^jev-"
+    },
+    "category": {
+      "enum": [
+        "implementation_complexity",
+        "hard_debugging",
+        "invalid_plan",
+        "requirement_ambiguity",
+        "environment_failure",
+        "test_failure"
+      ]
+    },
+    "completed": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "blocked_by": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "recommended_route": {
+      "type": "object",
+      "required": [
+        "agent",
+        "reason"
+      ],
+      "properties": {
+        "agent": {
+          "type": "string",
+          "pattern": "^(jev-|orchestrator$)"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

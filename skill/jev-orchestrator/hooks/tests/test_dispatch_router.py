@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Tests for hooks/dispatch_router.py and `jev.py outcomes` / `label`. Stdlib unittest, offline.
+"""Tests for hooks/dispatch_router.py (re-route + vNext guard) and `jev.py outcomes` / `label`. Stdlib unittest, offline.
 
 Run:  python3 ~/.claude/skills/jev-orchestrator/hooks/tests/test_dispatch_router.py -v
 Jev is replaced by JEV_DISPATCH_FAKE; hook runs log to ~/.claude/jev/decisions_test.jsonl.
 """
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -22,6 +23,8 @@ import jev  # noqa: E402
 LOG_NAME = "decisions_test"
 LOG_PATH = os.path.expanduser("~/.claude/jev/%s.jsonl" % LOG_NAME)
 TMP = tempfile.mkdtemp(prefix="jev-dispatch-test-")
+REPO_AGENTS = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(HERE)))), "agents")
+JEV_HOME = os.path.join(TMP, "jevhome")  # last_route.json + routing.log for hook runs
 
 
 def decision(sub="jev-scout", via="subagent", conf=0.8, **kw):
@@ -36,8 +39,9 @@ def run_hook(main_type, dec, mode=None, prompt="Look at the code.", desc="Find t
     with open(fake, "w") as f:
         json.dump(dec, f)
     tid = "toolu_" + uuid.uuid4().hex
-    env = dict(os.environ, JEV_DISPATCH_FAKE=fake, JEV_DISPATCH_LOG=LOG_NAME)
+    env = dict(os.environ, JEV_DISPATCH_FAKE=fake, JEV_DISPATCH_LOG=LOG_NAME, JEV_AGENTS_DIR=REPO_AGENTS, JEV_HOME=JEV_HOME)
     env.pop("JEV_DISPATCH", None)
+    env.pop("JEV_CONFIG", None)
     if mode:
         env["JEV_DISPATCH"] = mode
     payload = {"tool_name": "Agent", "tool_use_id": tid, "session_id": "s1", "cwd": TMP,
@@ -123,6 +127,191 @@ class HookTests(unittest.TestCase):
     def test_bad_stdin(self):
         p = subprocess.run([sys.executable, HOOK], input="not json", capture_output=True, text=True, timeout=20)
         self.assertSilent(p)
+
+
+def guard_hook(main_type, model=None, prompt="Do the work.", desc="Work", agents_dir=None, config=None, home=None,
+               dec=None, extra_env=None):
+    """Run the hook with the guard on. Returns (process, routing.log records, home dir)."""
+    home = home or tempfile.mkdtemp(dir=TMP)
+    fake = os.path.join(TMP, uuid.uuid4().hex + ".json")
+    with open(fake, "w") as f:
+        json.dump(dec or decision(main_type), f)  # Jev agrees with the pick unless dec says otherwise
+    env = dict(os.environ, JEV_DISPATCH_FAKE=fake, JEV_DISPATCH_LOG=LOG_NAME, JEV_AGENTS_DIR=agents_dir or REPO_AGENTS,
+               JEV_HOME=home)
+    for k in ("JEV_DISPATCH", "JEV_CONFIG", "JEV_GUARD"):
+        env.pop(k, None)
+    if config:
+        env["JEV_CONFIG"] = config
+    env.update(extra_env or {})
+    ti = {"description": desc, "prompt": prompt, "subagent_type": main_type}
+    if model is not None:
+        ti["model"] = model
+    payload = {"tool_name": "Agent", "tool_use_id": "toolu_" + uuid.uuid4().hex, "session_id": "s1", "cwd": TMP, "tool_input": ti}
+    p = subprocess.run([sys.executable, HOOK], input=json.dumps(payload), capture_output=True, text=True, env=env, timeout=20)
+    logs = []
+    path = os.path.join(home, "routing.log")
+    if os.path.isfile(path):
+        with open(path) as f:
+            logs = [json.loads(l) for l in f if l.strip()]
+    return p, logs, home
+
+
+def agents_copy(**edits):
+    d = tempfile.mkdtemp(dir=TMP)
+    for f in os.listdir(REPO_AGENTS):
+        if f.endswith(".md"):
+            shutil.copy(os.path.join(REPO_AGENTS, f), d)
+    for name, fn in edits.items():
+        path = os.path.join(d, name.replace("_", "-") + ".md")
+        if fn is None:
+            os.remove(path)
+            continue
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(fn(text))
+    return d
+
+
+def denied(p):
+    out = json.loads(p.stdout)["hookSpecificOutput"]
+    return out["permissionDecision"] == "deny", out["permissionDecisionReason"]
+
+
+class GuardTests(unittest.TestCase):
+    def test_valid_dispatch_allowed_and_logged(self):
+        p, logs, _ = guard_hook("jev-builder")
+        self.assertEqual(p.returncode, 0)
+        self.assertEqual(p.stdout.strip(), "")
+        rec = logs[-1]
+        for k in ("task_id", "role", "model", "effort", "reason", "attempt"):
+            self.assertIn(k, rec)
+        self.assertEqual((rec["role"], rec["model"], rec["effort"], rec["decision"]), ("jev-builder", "claude-sonnet-5-5", "low", "allow"))
+        self.assertIn("[JEV]", p.stderr)
+        self.assertIn("role=jev-builder", p.stderr)
+
+    def test_alias_model_denied(self):
+        for alias in ("sonnet", "opus", "haiku"):
+            p, logs, _ = guard_hook("jev-builder", model=alias)
+            deny, why = denied(p)
+            self.assertTrue(deny, alias)
+            self.assertIn("alias", why)
+            self.assertEqual(logs[-1]["decision"], "deny")
+
+    def test_exact_config_model_allowed(self):
+        p, _, _ = guard_hook("jev-builder", model="claude-sonnet-5-5")
+        self.assertEqual(p.stdout.strip(), "")
+
+    def test_sonnet_role_resolving_to_opus_denied(self):
+        p, _, _ = guard_hook("jev-builder", model="claude-opus-5-5")
+        deny, why = denied(p)
+        self.assertTrue(deny)
+        self.assertIn("JEV GUARDRAIL", why)
+        self.assertIn("Abort before execution", why)
+        d = agents_copy(jev_reviewer=lambda t: t.replace("model: claude-sonnet-5-5", "model: claude-opus-5-5"))
+        deny, why = denied(guard_hook("jev-reviewer", agents_dir=d)[0])
+        self.assertTrue(deny)
+        self.assertIn("JEV GUARDRAIL", why)
+
+    def test_missing_agent_denied_without_fallback(self):
+        d = agents_copy(jev_builder=None)
+        p, logs, _ = guard_hook("jev-builder", agents_dir=d)
+        deny, why = denied(p)
+        self.assertTrue(deny)
+        self.assertIn("definition file missing", why)
+        self.assertIn("No fallback agent was spawned", why)
+        self.assertIn("restart Claude Code", why)
+        self.assertNotIn("updatedInput", p.stdout)
+
+    def test_invalid_yaml_denied(self):
+        d = agents_copy(jev_qa=lambda t: t.replace('description: "', "description: QA (low effort): ").replace('."\n', ".\n", 1))
+        deny, why = denied(guard_hook("jev-qa", agents_dir=d)[0])
+        self.assertTrue(deny)
+        self.assertIn("frontmatter", why)
+
+    def test_unknown_jev_agent_denied(self):
+        deny, why = denied(guard_hook("jev-wizard")[0])
+        self.assertTrue(deny)
+        self.assertIn("not a configured JEV agent", why)
+
+    def write_route(self, home, task, allowed, escalations=None):
+        os.makedirs(home, exist_ok=True)
+        with open(os.path.join(home, "last_route.json"), "w") as f:
+            json.dump({task: {"task_id": task, "route": "planned", "allowed": allowed, "reason": "planned route",
+                              "escalations": escalations or [], "dispatches": 0}}, f)
+
+    def test_substitution_requires_recorded_escalation(self):
+        home = tempfile.mkdtemp(dir=TMP)
+        self.write_route(home, "TASK-S", ["jev-architect", "jev-builder", "jev-qa", "jev-reviewer"])
+        prompt = "Implement the plan. [jev:task=TASK-S]"
+        p, logs, _ = guard_hook("jev-builder", prompt=prompt, home=home)
+        self.assertEqual(p.stdout.strip(), "")
+        self.assertEqual((logs[-1]["task_id"], logs[-1]["attempt"]), ("TASK-S", 1))
+        p, logs, _ = guard_hook("jev-engineer", prompt=prompt, home=home)
+        deny, why = denied(p)
+        self.assertTrue(deny)
+        self.assertIn("recorded escalation required", why)
+        e = subprocess.run([sys.executable, os.path.join(SCRIPTS, "jev.py"), "escalate", "--task", "TASK-S", "--from", "builder",
+                            "--category", "implementation_complexity", "--state-dir", os.path.join(home, "state")],
+                           capture_output=True, text=True, env=dict(os.environ, JEV_HOME=home), cwd=TMP, timeout=30)
+        self.assertEqual(e.returncode, 0, e.stderr)
+        self.assertEqual(json.loads(e.stdout)["next_agent"], "jev-engineer")
+        p, logs, _ = guard_hook("jev-engineer", prompt=prompt, home=home)
+        self.assertEqual(p.stdout.strip(), "")
+        self.assertEqual(logs[-1]["reason"], "escalation implementation_complexity from jev-builder")
+        self.assertEqual(logs[-1]["attempt"], 2)
+        # a debugger was never routed nor escalated to
+        self.assertTrue(denied(guard_hook("jev-debugger", prompt=prompt, home=home)[0])[0])
+
+    def test_task_routed_dispatch_is_not_rerouted(self):
+        home = tempfile.mkdtemp(dir=TMP)
+        self.write_route(home, "TASK-R", ["jev-builder"])
+        p, _, _ = guard_hook("jev-builder", prompt="go [jev:task=TASK-R]", home=home, dec=decision("jev-engineer"))
+        self.assertEqual(p.stdout.strip(), "")  # Jev wanted engineer; the recorded route wins, no silent swap
+
+    def test_reroute_target_must_pass_guard(self):
+        d = agents_copy(jev_scout=None)
+        p, _, _ = guard_hook("jev-analyst", agents_dir=d, dec=decision("jev-scout"))
+        self.assertEqual(p.stdout.strip(), "")  # would have applied jev-scout, but its file is missing
+
+    def test_reroute_keeps_explicit_model_consistent(self):
+        p, _, _ = guard_hook("jev-analyst", model="claude-sonnet-5-5", dec=decision("jev-scout"))
+        ui = json.loads(p.stdout)["hookSpecificOutput"]["updatedInput"]
+        self.assertEqual((ui["subagent_type"], ui["model"]), ("jev-scout", "claude-sonnet-5-5"))
+
+    def test_opus_outside_allowed_roles_warns(self):
+        cfg = jev.load_config()
+        cfg["agents"]["jev-analyst"]["model"] = "opus"
+        path = os.path.join(TMP, uuid.uuid4().hex + ".json")
+        with open(path, "w") as f:
+            json.dump(cfg, f)
+        d = agents_copy(jev_analyst=lambda t: t.replace("model: claude-sonnet-5-5", "model: claude-opus-5-5"))
+        p, logs, _ = guard_hook("jev-analyst", agents_dir=d, config=path)
+        out = json.loads(p.stdout)
+        self.assertIn("opus_allowed_roles", out["systemMessage"])
+        self.assertNotIn("hookSpecificOutput", out)
+        self.assertEqual(logs[-1]["decision"], "allow")
+
+    def test_config_unreadable_fails_open_loudly(self):
+        p, logs, _ = guard_hook("jev-builder", model="sonnet", config=os.path.join(TMP, "missing.json"))
+        self.assertEqual(p.returncode, 0)
+        self.assertEqual(p.stdout.strip(), "")
+        self.assertIn("JEV CONFIG UNREADABLE", p.stderr)
+        self.assertEqual(logs[-1]["event"], "config_unreadable")
+
+    def test_guard_off(self):
+        p, logs, _ = guard_hook("jev-builder", model="sonnet", extra_env={"JEV_GUARD": "off"})
+        self.assertEqual(p.stdout.strip(), "")
+        self.assertEqual(logs, [])
+
+    def test_dispatch_off_still_guards(self):
+        p, _, _ = guard_hook("jev-builder", model="sonnet", extra_env={"JEV_DISPATCH": "off"})
+        self.assertTrue(denied(p)[0])
+
+    def test_non_jev_agents_untouched(self):
+        p, logs, _ = guard_hook("general-purpose", model="sonnet")
+        self.assertEqual(p.stdout.strip(), "")
+        self.assertEqual(logs, [])
 
 
 def iso(t):

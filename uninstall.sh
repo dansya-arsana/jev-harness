@@ -23,7 +23,7 @@ if [[ -e "$SETTINGS" ]]; then
 import json, sys
 path = sys.argv[1]
 d = json.load(open(path))
-ours = ("jev-orchestrator/hooks/permission_gate.py", "jev-orchestrator/hooks/prompt_router.py")
+ours = ("jev-orchestrator/hooks/permission_gate.py", "jev-orchestrator/hooks/dispatch_router.py", "jev-orchestrator/hooks/prompt_router.py")
 for event, groups in list(d.get("hooks", {}).items()):
     kept = []
     for g in groups:

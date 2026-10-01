@@ -1,0 +1,12 @@
+{"task": "Change the Save button label to Submit in src/settings/SettingsPage.tsx", "ok": ["builder"], "ladder": "write", "fast_path": true}
+{"task": "Fix the typo 'recieve' in the footer text in src/components/Footer.tsx", "ok": ["builder"], "ladder": "write", "fast_path": true}
+{"task": "Rename the local variable tmp to retryCount inside formatDate in src/utils/date.ts", "ok": ["builder"], "ladder": "write", "fast_path": true}
+{"task": "Change the MAX_UPLOAD_MB constant from 10 to 25 in src/config/limits.ts", "ok": ["builder"], "ladder": "write", "fast_path": true}
+{"task": "Add a null check for user.avatarUrl before rendering the img in src/components/ProfileCard.tsx", "ok": ["builder"], "ladder": "write", "fast_path": true}
+{"task": "Persist the user's theme preference across restarts in the settings and storage modules", "ok": ["builder", "engineer", "architect"], "ladder": "write", "fast_path": false}
+{"task": "Add a new column last_login_at to the users table with a migration and backfill", "ok": ["builder", "engineer", "architect"], "ladder": "write", "fast_path": false}
+{"task": "Change the signature of the exported parseConfig() in the public SDK to accept an options object", "ok": ["builder", "engineer", "architect"], "ladder": "write", "fast_path": false}
+{"task": "Make the cache refresh in worker.py safe when two workers run it concurrently", "ok": ["builder", "engineer", "architect", "debugger"], "ladder": "write", "fast_path": false}
+{"task": "Implement streaming world chunks around the player with load/unload and persisted chunk state", "ok": ["engineer", "architect"], "ladder": "write", "fast_path": false}
+{"task": "Improve the checkout page somehow, it feels slow", "ok": ["builder", "engineer", "architect", "analyst", "main"], "ladder": "any", "fast_path": false}
+{"task": "Refactor the auth token refresh flow across the API client and the session store", "ok": ["engineer", "architect"], "ladder": "write", "fast_path": false}

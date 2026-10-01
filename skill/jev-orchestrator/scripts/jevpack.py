@@ -85,7 +85,7 @@ def iter_files(root, paths):
         elif os.path.isfile(full):
             seen.add(full)
     for f in sorted(seen):
-        rel = os.path.relpath(f, root)
+        rel = os.path.relpath(f, root).replace(os.sep, "/")  # "/" so SECRET_FILE's anchors hold on Windows
         ext = os.path.splitext(f)[1].lower()
         if SECRET_FILE.search(rel) and not SAFE_TEMPLATE.search(rel):
             continue
@@ -143,16 +143,10 @@ def grep_files(root, patterns):
     return sorted(hits)
 
 
-def cmd_build(args):
-    root = os.path.abspath(args.root)
-    paths = list(args.paths)
-    if args.files_from:
-        with open(args.files_from) as f:
-            paths += [l.strip() for l in f if l.strip() and not l.startswith("#")]
-    if args.grep:
-        paths += grep_files(root, args.grep)
-    if not paths:
-        sys.exit(json.dumps({"error": "no paths: pass PATHs, --files-from, or --grep"}))
+def gather_chunks(root, paths):
+    """Pure packaging step: (files, chunks) for PATHs under root. Skips secrets/binaries, redacts text.
+
+    Public so other harness scripts (jevctx) package context without re-implementing the chunker."""
     chunks, files = [], []
     for full, rel in iter_files(root, paths):
         try:
@@ -167,6 +161,20 @@ def cmd_build(args):
                 continue
             chunks.append({"id": "c%d" % len(chunks), "path": rel, "start": start, "end": end,
                            "outline": outline_of(lines, start, end), "text": jevlib.redact(text)})
+    return files, chunks
+
+
+def cmd_build(args):
+    root = os.path.abspath(args.root)
+    paths = list(args.paths)
+    if args.files_from:
+        with open(args.files_from) as f:
+            paths += [l.strip() for l in f if l.strip() and not l.startswith("#")]
+    if args.grep:
+        paths += grep_files(root, args.grep)
+    if not paths:
+        sys.exit(json.dumps({"error": "no paths: pass PATHs, --files-from, or --grep"}))
+    files, chunks = gather_chunks(root, paths)
     dropped = max(0, len(chunks) - MAX_CHUNKS)
     kept_paths = {c["path"] for c in chunks[:MAX_CHUNKS]}
     dropped_files = sorted({c["path"] for c in chunks[MAX_CHUNKS:]} - kept_paths)

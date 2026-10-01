@@ -1,0 +1,42 @@
+{
+  "_comment": "Single source of truth for JEV agent routing. Agent files, the preflight and the dispatch router all read this. Model IDs are the runtime IDs: claude-opus-5-5 and claude-sonnet-5-5.",
+  "models": { "opus": "claude-opus-5-5", "sonnet": "claude-sonnet-5-5" },
+  "agents": {
+    "jev-architect": { "model": "opus",   "effort": "max",    "write": false, "role": "architecture, planning, replan" },
+    "jev-advisor":   { "model": "sonnet", "effort": "high",   "write": false, "role": "design alternatives and advice" },
+    "jev-analyst":   { "model": "sonnet", "effort": "high",   "write": false, "role": "investigation, code analysis" },
+    "jev-builder":   { "model": "sonnet", "effort": "low",    "write": true,  "role": "default implementation" },
+    "jev-engineer":  { "model": "sonnet", "effort": "medium", "write": true,  "role": "complex implementation, builder escalation" },
+    "jev-debugger":  { "model": "opus",   "effort": "high",   "write": true,  "role": "hard debugging, last-resort rescue" },
+    "jev-reviewer":  { "model": "sonnet", "effort": "medium", "write": false, "role": "independent review" },
+    "jev-qa":        { "model": "sonnet", "effort": "low",    "write": false, "role": "browser QA and verification" },
+    "jev-scout":     { "model": "sonnet", "effort": "low",    "write": false, "role": "repo, file and symbol lookup" }
+  },
+  "fallbacks": { "jev-builder": null, "jev-reviewer": null, "jev-engineer": null, "jev-architect": null, "jev-debugger": null, "jev-analyst": null, "jev-advisor": null, "jev-qa": null, "jev-scout": null },
+  "required_agents": ["jev-architect", "jev-builder", "jev-engineer", "jev-debugger", "jev-reviewer", "jev-qa", "jev-scout"],
+  "guardrails": {
+    "opus_allowed_roles": ["jev-architect", "jev-debugger"],
+    "max_effort_allowed_roles": ["jev-architect"],
+    "max_replans": 2,
+    "max_debugger_attempts": 2
+  },
+  "context_policy": {
+    "jev-architect": { "graph": "required",    "scope": "broad" },
+    "jev-advisor":   { "graph": "conditional", "scope": "targeted" },
+    "jev-analyst":   { "graph": "required",    "scope": "broad" },
+    "jev-scout":     { "graph": "required",    "scope": "targeted" },
+    "jev-builder":   { "graph": "conditional", "scope": "narrow",   "plan_context_first": true },
+    "jev-engineer":  { "graph": "conditional", "scope": "expanded", "prior_handoff_first": true },
+    "jev-debugger":  { "graph": "required",    "scope": "expanded" },
+    "jev-reviewer":  { "graph": "required",    "scope": "changed_files_plus_dependents" },
+    "jev-qa":        { "graph": "optional",    "scope": "feature_surface" }
+  },
+  "escalation": {
+    "implementation_complexity": "jev-engineer",
+    "hard_debugging": "jev-debugger",
+    "invalid_plan": "jev-architect",
+    "requirement_ambiguity": "orchestrator",
+    "environment_failure": "stop",
+    "test_failure": "jev-builder"
+  }
+}

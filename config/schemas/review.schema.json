@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review.schema.json",
+  "title": "JEV reviewer verdict (vnext-plan section 12, 'Reviewer contract')",
+  "description": "Written by jev-reviewer from the task, the persisted plan, the diff and test results only; never from the builder's reasoning. jev.py also rejects verdict pass with critical/major findings or a failing criterion.",
+  "type": "object",
+  "required": [
+    "verdict",
+    "findings",
+    "acceptance_criteria",
+    "regression_risks",
+    "required_changes"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "changes_required"
+      ]
+    },
+    "findings": {
+      "type": "object",
+      "required": [
+        "critical",
+        "major",
+        "minor"
+      ],
+      "properties": {
+        "critical": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "major": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "minor": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "criterion",
+          "status"
+        ],
+        "properties": {
+          "criterion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail",
+              "unclear"
+            ]
+          }
+        }
+      }
+    },
+    "regression_risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required_changes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

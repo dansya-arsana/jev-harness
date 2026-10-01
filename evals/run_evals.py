@@ -4,6 +4,7 @@
   python3 evals/run_evals.py gate     permission gate on evals/gate_cases.jsonl
   python3 evals/run_evals.py route    jev.py route on evals/route_cases.jsonl
   python3 evals/run_evals.py router   prompt router (conditions + skills) on evals/router_cases.jsonl
+  python3 evals/run_evals.py route-fastpath   vNext fast path vs planned route on evals/route_fastpath_cases.jsonl
   python3 evals/run_evals.py all
 
 Results go to evals/results/<name>.json. Gate cases are piped to the hook as JSON only. A script a case
@@ -106,7 +107,9 @@ def eval_gate(cases="gate_cases.jsonl", out="gate"):
 
 def route_case(case):
     t = time.time()
-    p = subprocess.run([sys.executable, JEV, "route", case["task"]], capture_output=True, text=True)
+    # JEV_HOME keeps eval routes out of the real ~/.claude/jev/last_route.json (the dispatch guard reads it)
+    env = dict(os.environ, JEV_HOME=os.path.join(tempfile.gettempdir(), "jev-eval-home"))
+    p = subprocess.run([sys.executable, JEV, "route", case["task"]], capture_output=True, text=True, env=env)
     ms = int((time.time() - t) * 1000)
     try:
         d = json.loads(p.stdout)
@@ -126,9 +129,14 @@ def route_case(case):
         ladder_ok = got_ladder in ("read", "orchestrate") or tier == "main"
     else:
         ladder_ok = got_ladder in ("write", "orchestrate") or tier == "main"
-    return dict(case, acceptable=case["ok"], got=tier, got_tier=d.get("tier"), via=d.get("via"), effort=d.get("effort"), ladder_got=got_ladder,
-                ok=ok, tier_ok=tier_ok, ladder_ok=ladder_ok, ms=ms, depth=d.get("depth"), breadth=d.get("breadth"),
-                signals=d.get("signals"), reasons=d.get("reasons"))
+    row = dict(case, acceptable=case["ok"], got=tier, got_tier=d.get("tier"), via=d.get("via"), effort=d.get("effort"), ladder_got=got_ladder,
+               ok=ok, tier_ok=tier_ok, ladder_ok=ladder_ok, ms=ms, depth=d.get("depth"), breadth=d.get("breadth"),
+               signals=d.get("signals"), reasons=d.get("reasons"), route=d.get("route"), fast_path_got=d.get("fast_path"),
+               next_agent=d.get("next_agent"))
+    if "fast_path" in case:  # vNext: fast path (builder directly) vs planned route (architect first)
+        row["fast_path_ok"] = d.get("fast_path") == case["fast_path"]
+        row["ok"] = row["fast_path_ok"]
+    return row
 
 
 def eval_route(cases="route_cases.jsonl", out="route"):
@@ -144,6 +152,9 @@ def eval_route(cases="route_cases.jsonl", out="route"):
                                                       for r in read_rows), len(read_rows)),
         "ladder_violations": sum(not r["ladder_ok"] for r in rows),
         "errors": sum(1 for r in rows if r.get("error")),
+        "fast_path": ("%d/%d" % (sum(r.get("fast_path_ok", False) for r in rows), sum("fast_path" in r for r in rows))
+                      if any("fast_path" in r for r in rows) else None),
+        "fast_path_false_positives": sum(1 for r in rows if r.get("fast_path") is False and r.get("fast_path_got")),
         "latency_ms": {"p50": pct([r["ms"] for r in rows], .5), "p95": pct([r["ms"] for r in rows], .95)},
         "misses": [{"task": r["task"][:80], "want": r["ok"] if isinstance(r["ok"], list) else None,
                     "acceptable": [c for c in load(cases) if c["task"] == r["task"]][0]["ok"],
@@ -229,7 +240,8 @@ def main():
               "gate-heldout2": lambda: eval_gate("gate_cases_heldout2.jsonl", "gate_heldout2"),
               "route-heldout": lambda: eval_route("route_cases_heldout.jsonl", "route_heldout"),
               "route-heldout2": lambda: eval_route("route_cases_heldout2.jsonl", "route_heldout2"),
-              "route-heldout3": lambda: eval_route("route_cases_heldout3.jsonl", "route_heldout3")}
+              "route-heldout3": lambda: eval_route("route_cases_heldout3.jsonl", "route_heldout3"),
+              "route-fastpath": lambda: eval_route("route_fastpath_cases.jsonl", "route_fastpath")}
     for name in (["gate", "route", "router"] if which == "all" else [which]):
         t = time.time()
         s = suites[name]()
