@@ -1,0 +1,46 @@
+{
+  "name": "max-quality",
+  "summary": "Best output: Opus for architect (max) and debugger (high); Sonnet at higher effort everywhere else.",
+  "models": {
+    "opus": "claude-opus-5-5",
+    "sonnet": "claude-sonnet-5-5"
+  },
+  "agents": {
+    "jev-architect": {
+      "model": "opus",
+      "effort": "max"
+    },
+    "jev-advisor": {
+      "model": "sonnet",
+      "effort": "high"
+    },
+    "jev-analyst": {
+      "model": "sonnet",
+      "effort": "high"
+    },
+    "jev-builder": {
+      "model": "sonnet",
+      "effort": "medium"
+    },
+    "jev-engineer": {
+      "model": "sonnet",
+      "effort": "high"
+    },
+    "jev-debugger": {
+      "model": "opus",
+      "effort": "high"
+    },
+    "jev-reviewer": {
+      "model": "sonnet",
+      "effort": "high"
+    },
+    "jev-qa": {
+      "model": "sonnet",
+      "effort": "medium"
+    },
+    "jev-scout": {
+      "model": "sonnet",
+      "effort": "medium"
+    }
+  }
+}

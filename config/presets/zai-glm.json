@@ -1,0 +1,50 @@
+{
+  "name": "zai-glm",
+  "summary": "Z.ai GLM through ANTHROPIC_BASE_URL: model IDs come from your ANTHROPIC_DEFAULT_OPUS/SONNET_MODEL remaps (deep for architect and debugger, work for the rest).",
+  "requires_env": [
+    "ANTHROPIC_DEFAULT_OPUS_MODEL",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL"
+  ],
+  "models": {
+    "deep": "$ANTHROPIC_DEFAULT_OPUS_MODEL",
+    "work": "$ANTHROPIC_DEFAULT_SONNET_MODEL"
+  },
+  "agents": {
+    "jev-architect": {
+      "model": "deep",
+      "effort": "max"
+    },
+    "jev-advisor": {
+      "model": "work",
+      "effort": "high"
+    },
+    "jev-analyst": {
+      "model": "work",
+      "effort": "high"
+    },
+    "jev-builder": {
+      "model": "work",
+      "effort": "low"
+    },
+    "jev-engineer": {
+      "model": "work",
+      "effort": "medium"
+    },
+    "jev-debugger": {
+      "model": "deep",
+      "effort": "high"
+    },
+    "jev-reviewer": {
+      "model": "work",
+      "effort": "medium"
+    },
+    "jev-qa": {
+      "model": "work",
+      "effort": "low"
+    },
+    "jev-scout": {
+      "model": "work",
+      "effort": "low"
+    }
+  }
+}

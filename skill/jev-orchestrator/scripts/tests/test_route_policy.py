@@ -4,6 +4,8 @@ import os
 import sys
 import unittest
 
+_REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+os.environ["JEV_CONFIG"] = os.path.join(_REPO, "config", "agents.json")  # tests never read ~/.claude/jev/agents.json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import jev  # noqa: E402
 

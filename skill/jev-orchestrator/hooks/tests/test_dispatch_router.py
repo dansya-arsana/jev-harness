@@ -17,6 +17,7 @@ import uuid
 HERE = os.path.dirname(os.path.abspath(__file__))
 HOOK = os.path.join(os.path.dirname(HERE), "dispatch_router.py")
 SCRIPTS = os.path.join(os.path.dirname(os.path.dirname(HERE)), "scripts")
+os.environ["JEV_CONFIG"] = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(HERE)))), "config", "agents.json")  # tests never read ~/.claude/jev/agents.json
 sys.path.insert(0, SCRIPTS)
 import jev  # noqa: E402
 

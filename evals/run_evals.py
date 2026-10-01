@@ -21,6 +21,7 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
+os.environ.setdefault("JEV_CONFIG", os.path.join(REPO, "config", "agents.json"))
 SKILL = os.path.join(REPO, "skill", "jev-orchestrator")
 GATE = os.path.join(SKILL, "hooks", "permission_gate.py")
 ROUTER = os.path.join(SKILL, "hooks", "prompt_router.py")

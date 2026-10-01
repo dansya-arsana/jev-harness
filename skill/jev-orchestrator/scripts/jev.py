@@ -68,8 +68,23 @@ class ConfigError(Exception):
     """config/agents.json is missing or malformed."""
 
 
+def jev_home():
+    """Where last_route.json and routing.log live (default ~/.claude/jev; JEV_HOME overrides, for tests)."""
+    return os.environ.get("JEV_HOME") or jevlib.LOG_DIR
+
+
+ACTIVE_CONFIG_NAME = "agents.json"
+
+
 def config_path():
-    return os.environ.get("JEV_CONFIG") or CONFIG_PATH
+    """JEV_CONFIG, else <jev_home()>/agents.json when present (written by onboarding), else the shipped config."""
+    env = os.environ.get("JEV_CONFIG")
+    if env:
+        return env
+    active = os.path.join(jev_home(), ACTIVE_CONFIG_NAME)
+    if os.path.isfile(active):
+        return active
+    return CONFIG_PATH
 
 
 def load_config(path=None):
@@ -907,13 +922,8 @@ TASK_MARKER = re.compile(r"\[jev:task=([A-Za-z0-9][A-Za-z0-9._-]{0,80})\]")
 REGISTRY_NOTE = ("File checks cannot see the live session's agent registry: Claude Code loads agents when a session starts. "
                  "An agent whose file was missing or invalid when this session started stays unregistered until you restart "
                  "Claude Code, even if the file is valid now.")
-RESTART_HINT = ("Fix: python scripts/sync_agents.py (rewrites frontmatter from config/agents.json), re-run ./install.sh if "
-                "~/.claude/agents holds copies, run `jev.py preflight` again, then restart Claude Code.")
-
-
-def jev_home():
-    """Where last_route.json and routing.log live (default ~/.claude/jev; JEV_HOME overrides, for tests)."""
-    return os.environ.get("JEV_HOME") or jevlib.LOG_DIR
+RESTART_HINT = ("Fix: re-run python scripts/onboard.py (re-renders ~/.claude/agents from your routing config; "
+                "python scripts/sync_agents.py fixes the repo templates), run `jev.py preflight` again, then restart Claude Code.")
 
 
 def default_agents_dir():
@@ -1193,9 +1203,11 @@ def cmd_preflight(args):
                    "Task execution stopped.\nNo fallback agent was spawned." % e})
     project_dir = None if (args.agents_dir or os.environ.get("JEV_AGENTS_DIR")) else os.getcwd()
     res = preflight(cfg, args.agents_dir, args.agent, args.all, project_dir)
+    res["config"] = config_path()
     if args.json:
         print(json.dumps(res, indent=2))
     else:
+        print("Config: %s" % res["config"])
         print(res["table"])
         print()
         for w in res["warnings"]:

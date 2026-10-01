@@ -1,83 +1,30 @@
-#!/bin/zsh
-# Install the Jev harness into ~/.claude by linking it from this repo.
-#
-#   ./install.sh           link the skill, the jev-* agents, and seed ~/.claude/jev/conditions.json
-#   ./install.sh --hooks   also register the permission gate, dispatch router and prompt router in ~/.claude/settings.json
-#
-# Safe to re-run: links are refreshed, real files it would replace are moved to ~/.claude/backups/ (never deleted),
-# settings.json is backed up before any change, and hook entries are only added once.
-set -euo pipefail
+#!/bin/sh
+# Jev harness installer wrapper: finds Python 3.9+ and runs scripts/onboard.py.
+#   --legacy   run the old zsh installer (scripts/legacy/install.sh)
+#   --hooks    shorthand for --components skill,agents,gate,dispatch,router
+# JEV_ONBOARD_PY / JEV_LEGACY_SCRIPT override the targets (tests only).
+set -eu
+REPO=$(cd "$(dirname "$0")" && pwd)
 
-REPO="${0:A:h}"
-STAMP="$(date +%Y%m%d-%H%M%S)"
-BACKUP="$HOME/.claude/backups/jev-$STAMP"
+legacy=0
+for a in "$@"; do [ "$a" = "--legacy" ] && legacy=1; done
+if [ "$legacy" = 1 ]; then
+  command -v zsh >/dev/null 2>&1 || { echo "zsh is required for --legacy"; exit 1; }
+  # drop --legacy and rewrite nothing else
+  for a in "$@"; do shift; [ "$a" = "--legacy" ] || set -- "$@" "$a"; done
+  exec zsh "${JEV_LEGACY_SCRIPT:-$REPO/scripts/legacy/install.sh}" "$@"
+fi
 
-link() {  # link <repo path> <target path>
-  local src="$REPO/$1" dst="$2"
-  mkdir -p "${dst:h}"
-  if [[ -L "$dst" ]]; then
-    rm "$dst"
-  elif [[ -e "$dst" ]]; then
-    mkdir -p "$BACKUP"
-    mv "$dst" "$BACKUP/"
-    echo "backed up $dst -> $BACKUP/"
-  fi
-  ln -s "$src" "$dst"
-  echo "linked    $dst"
-}
-
-command -v python3 >/dev/null || { echo "python3 is required"; exit 1; }
-
-link skill/jev-orchestrator "$HOME/.claude/skills/jev-orchestrator"
-for f in "$REPO"/agents/jev-*.md; do
-  link "agents/${f:t}" "$HOME/.claude/agents/${f:t}"
+# rewrite --hooks
+for a in "$@"; do
+  shift
+  if [ "$a" = "--hooks" ]; then set -- "$@" --components skill,agents,gate,dispatch,router; else set -- "$@" "$a"; fi
 done
 
-mkdir -p "$HOME/.claude/jev"
-if [[ ! -e "$HOME/.claude/jev/conditions.json" ]]; then
-  cp "$REPO/config/conditions.example.json" "$HOME/.claude/jev/conditions.json"
-  echo "created   ~/.claude/jev/conditions.json from the example (edit it: these are your own rules)"
-else
-  echo "kept      ~/.claude/jev/conditions.json (yours)"
-fi
-
-if [[ ! -e "$REPO/.env" && -z "${TYPESAFE_API_KEY:-}" && ! -e "$HOME/.config/typesafe/.env" ]]; then
-  echo
-  echo "No TypeSafe key found. Put it in $REPO/.env (see .env.example) or export TYPESAFE_API_KEY."
-fi
-
-if [[ "${1:-}" == "--hooks" ]]; then
-  SETTINGS="$HOME/.claude/settings.json"
-  [[ -e "$SETTINGS" ]] || echo '{}' > "$SETTINGS"
-  cp -p "$SETTINGS" "$SETTINGS.bak-jev-$STAMP"
-  python3 - "$SETTINGS" <<'PY'
-import json, sys
-path = sys.argv[1]
-d = json.load(open(path))
-hooks = d.setdefault("hooks", {})
-entries = [
-    ("PreToolUse", {"matcher": "Bash|Write|Edit|MultiEdit|NotebookEdit", "hooks": [{"type": "command",
-                    "command": "python3 ~/.claude/skills/jev-orchestrator/hooks/permission_gate.py", "timeout": 10}]}),
-    ("PreToolUse", {"matcher": "Agent|Task", "hooks": [{"type": "command",
-                    "command": "python3 ~/.claude/skills/jev-orchestrator/hooks/dispatch_router.py", "timeout": 10}]}),
-    ("UserPromptSubmit", {"hooks": [{"type": "command",
-                          "command": "python3 ~/.claude/skills/jev-orchestrator/hooks/prompt_router.py", "timeout": 15}]}),
-]
-for event, entry in entries:
-    lst = hooks.setdefault(event, [])
-    cmd = entry["hooks"][0]["command"]
-    name = cmd.rsplit("/", 1)[-1]
-    if any(h.get("command") == cmd for g in lst for h in g.get("hooks", [])):
-        print("hook      %s %s already registered" % (event, name))
-    else:
-        lst.append(entry)
-        print("hook      %s %s registered" % (event, name))
-text = json.dumps(d, indent=2) + "\n"
-json.loads(text)
-open(path, "w").write(text)
-PY
-  echo "settings backup: $SETTINGS.bak-jev-$STAMP"
-fi
-
-echo
-echo "done. Start a new Claude Code session so it loads the agents and hooks."
+for c in python3 python py; do
+  if command -v "$c" >/dev/null 2>&1 && "$c" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)' >/dev/null 2>&1; then
+    exec "$c" "${JEV_ONBOARD_PY:-$REPO/scripts/onboard.py}" "$@"
+  fi
+done
+echo "jev-harness needs Python 3.9+ (python.org; on Windows the Microsoft Store python3 stub does not count)"
+exit 1

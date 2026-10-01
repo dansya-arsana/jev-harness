@@ -5,7 +5,7 @@ description: "Use Jev (TypeSafe) to split and delegate work to JEV subagents wit
 
 # Jev orchestrator (vNext)
 
-You (the main agent) plan and split the work. **Jev answers the small questions, code holds the policy, and `config/agents.json` holds the routing**: model, effort, write capability, fallbacks (all `null`), context policy, escalation table and guardrails. `scripts/sync_agents.py` writes the agent files from it.
+You (the main agent) plan and split the work. **Jev answers the small questions, code holds the policy, and the active config holds the routing**: model, effort, write capability, fallbacks (all `null`), context policy, escalation table and guardrails. The active config is `~/.claude/jev/agents.json` (written by `scripts/onboard.py`), falling back to the shipped `config/agents.json`. `scripts/onboard.py` and `scripts/sync_agents.py` write the agent files from it.
 
 Helper: `python3 ~/.claude/skills/jev-orchestrator/scripts/jev.py <command>`. Each command prints one JSON object (preflight prints a table unless `--json`). A route call is ~800 Jev input tokens and ~1.3 s.
 
@@ -20,7 +20,7 @@ It checks each agent file in `~/.claude/agents` (project `.claude/agents` shadow
 - **FAIL (exit 1): stop.** Show the user the table and the `JEV PREFLIGHT FAILED` message. Do not start the task and **never spawn a substitute** (no engineer for a missing builder, no analyst for a missing reviewer).
 - **PASS is about files, not the live registry.** Claude Code registers agents when the session starts. If a file was missing or invalid at session start, the agent stays unregistered until the user restarts Claude Code, even if preflight passes now. If the Agent tool says "Agent type 'jev-x' not found", stop and tell the user to restart. Don't substitute.
 
-## Roles (from config/agents.json)
+## Roles (balanced preset; `jev.py preflight` shows the active models)
 
 | Agent | Model | Effort | Capability | Purpose |
 |---|---|---:|---|---|
@@ -34,11 +34,11 @@ It checks each agent file in `~/.claude/agents` (project `.claude/agents` shadow
 | `jev-qa` | Sonnet 5.5 | low | browser | QA and verification via `jevqa.py` |
 | `jev-scout` | Sonnet 5.5 | low | read-only | repo, file and symbol lookup |
 
-SONNET executes, inspects and verifies; OPUS decides and rescues. Model IDs are `claude-sonnet-5-5` / `claude-opus-5-5`.
+SONNET executes, inspects and verifies; OPUS decides and rescues. Model IDs come from the active config (balanced: `claude-sonnet-5-5` / `claude-opus-5-5`).
 
 ## Spawning: the model is never ambient
 
-- **Agent tool:** pass `subagent_type` only. The agent file pins the model from config. If you pass `model`, it must be exactly the config ID (`claude-sonnet-5-5` for a Sonnet role). **Never pass an alias** (`opus`/`sonnet`/`haiku`). Aliases follow settings remaps (`ANTHROPIC_DEFAULT_*_MODEL`), and the dispatch guard denies them.
+- **Agent tool:** pass `subagent_type` only. The agent file pins the model from config. If you pass `model`, it must be exactly the active config's ID for that role. **Never pass an alias** (`opus`/`sonnet`/`haiku`). Aliases follow settings remaps (`ANTHROPIC_DEFAULT_*_MODEL`), and the dispatch guard denies them.
 - **Workflow `agent()` calls:** always pass `opts.model` set to the config model ID of the role the agent plays (`route` returns `worker_model` for ultracode), plus `opts.effort` from the route. Workflow agents otherwise inherit the session model.
 - Put `[jev:task=<task_id>]` (route returns it as `task_marker`) in every prompt of a routed task. The dispatch guard uses it to enforce the route.
 - Prompts carry everything the subagent needs, because it doesn't see this conversation: the task, the persisted plan path, the context block, and earlier BLOCKED reports. Don't tell agents to "report terse" or "use graphify first": their files already say so.

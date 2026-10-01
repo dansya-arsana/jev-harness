@@ -1,0 +1,5 @@
+{
+  "name": "balanced",
+  "summary": "Default (vNext): Opus plans and rescues (architect max, debugger high); Sonnet builds, reviews and looks things up.",
+  "base": "shipped"
+}

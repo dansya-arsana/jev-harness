@@ -17,6 +17,7 @@ SCRIPTS = os.path.dirname(HERE)
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(SCRIPTS)))
 REPO_AGENTS = os.path.join(REPO, "agents")
 JEV = os.path.join(SCRIPTS, "jev.py")
+os.environ["JEV_CONFIG"] = os.path.join(REPO, "config", "agents.json")  # tests never read ~/.claude/jev/agents.json
 sys.path.insert(0, SCRIPTS)
 import jev  # noqa: E402
 
@@ -24,8 +25,10 @@ CFG = jev.load_config()
 TMP = tempfile.mkdtemp(prefix="jev-vnext-test-")
 
 
-def run(args, cwd=None, env=None, stdin=None):
+def run(args, cwd=None, env=None, stdin=None, drop=()):
     e = dict(os.environ, JEV_HOME=os.path.join(TMP, "home"))
+    for k in drop:
+        e.pop(k, None)
     e.pop("JEV_AGENTS_DIR", None)
     e.update(env or {})
     p = subprocess.run([sys.executable, JEV] + args, capture_output=True, text=True, cwd=cwd or TMP, env=e, input=stdin,
@@ -528,6 +531,39 @@ class ContextWrapper(unittest.TestCase):
         out = json.loads(p.stdout)
         self.assertEqual(out["graph_status"], "unavailable")
         self.assertIn("boom", out["error"])
+
+
+class ConfigResolution(unittest.TestCase):
+    def _home_with_cfg(self):
+        h = tempfile.mkdtemp(dir=TMP)
+        cfg = json.loads(json.dumps(CFG))
+        cfg["agents"]["jev-builder"]["effort"] = "medium"
+        path = os.path.join(h, "agents.json")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(cfg, f)
+        return h, path
+
+    def test_default_is_shipped(self):
+        h = tempfile.mkdtemp(dir=TMP)
+        p = run(["preflight", "--json", "--agents-dir", REPO_AGENTS], env={"JEV_HOME": h}, drop=("JEV_CONFIG",))
+        res = json.loads(p.stdout)
+        self.assertTrue(res["config"].replace("\\", "/").endswith("config/agents.json"), res["config"])
+
+    def test_jev_home_config_used(self):
+        h, path = self._home_with_cfg()
+        p = run(["preflight", "--json", "--agents-dir", REPO_AGENTS], env={"JEV_HOME": h}, drop=("JEV_CONFIG",))
+        res = json.loads(p.stdout)
+        self.assertEqual(os.path.normpath(res["config"]), os.path.normpath(path))
+        self.assertNotEqual(p.returncode, 0)
+        self.assertIn("effort", p.stdout)
+
+    def test_env_config_wins(self):
+        h, _ = self._home_with_cfg()
+        shipped = os.path.join(REPO, "config", "agents.json")
+        p = run(["preflight", "--json", "--agents-dir", REPO_AGENTS], env={"JEV_HOME": h, "JEV_CONFIG": shipped})
+        res = json.loads(p.stdout)
+        self.assertEqual(os.path.normpath(res["config"]), os.path.normpath(shipped))
+        self.assertEqual(p.returncode, 0, p.stdout)
 
 
 if __name__ == "__main__":

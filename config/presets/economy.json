@@ -1,0 +1,46 @@
+{
+  "name": "economy",
+  "summary": "Cheapest: every role on Sonnet, no Opus.",
+  "models": {
+    "opus": "claude-opus-5-5",
+    "sonnet": "claude-sonnet-5-5"
+  },
+  "agents": {
+    "jev-architect": {
+      "model": "sonnet",
+      "effort": "high"
+    },
+    "jev-advisor": {
+      "model": "sonnet",
+      "effort": "medium"
+    },
+    "jev-analyst": {
+      "model": "sonnet",
+      "effort": "medium"
+    },
+    "jev-builder": {
+      "model": "sonnet",
+      "effort": "low"
+    },
+    "jev-engineer": {
+      "model": "sonnet",
+      "effort": "medium"
+    },
+    "jev-debugger": {
+      "model": "sonnet",
+      "effort": "high"
+    },
+    "jev-reviewer": {
+      "model": "sonnet",
+      "effort": "medium"
+    },
+    "jev-qa": {
+      "model": "sonnet",
+      "effort": "low"
+    },
+    "jev-scout": {
+      "model": "sonnet",
+      "effort": "low"
+    }
+  }
+}

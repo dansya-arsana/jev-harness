@@ -1,4 +1,4 @@
-<!-- jev-harness:begin (managed by jev-harness install.ps1; edit config/global-rules.md in the repo) -->
+<!-- jev-harness:begin (managed by jev-harness scripts/onboard.py; edit config/global-rules.md in the repo) -->
 # Required stack on this machine: Jev + caveman + graphify + jev-ultrafast (bora)
 
 Use all four together in every project. They are not optional.
