@@ -190,6 +190,17 @@ class Settings(Base):
         self.fixture()
         st = oe.claude_settings(self.home)
         self.assertEqual(len(oe.remap_warnings(st, {}, {"opus": "claude-opus-5-5"})), 3)
+        # agents already pinned to the remap targets (preset zai-glm): only the same-model note remains
+        w = oe.remap_warnings(st, {}, {"deep": "glm-5.3", "work": "glm-5.3"})
+        self.assertEqual(len(w), 1)
+        self.assertIn("same model", w[0])
+
+    def test_config_models_prefers_active(self):
+        active = self.home / ".claude" / "jev"
+        active.mkdir(parents=True)
+        (active / "agents.json").write_text('{"models": {"work": "glm-5.3"}}', encoding="utf-8")
+        self.assertEqual(oe._config_models(REPO, self.home), {"work": "glm-5.3"})
+        self.assertTrue(any(str(v).startswith("claude-") for v in oe._config_models(REPO).values()))
 
 
 class Install(Base):

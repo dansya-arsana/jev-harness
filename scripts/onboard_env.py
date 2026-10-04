@@ -308,7 +308,8 @@ def remap_warnings(settings, env, model_ids):
     if _third_party(host) and any(i.startswith("claude-") for i in ids):
         out.append("ANTHROPIC_BASE_URL points at %s but the routing config uses claude- model ids; "
                    "suggest --preset zai-glm (or --model-id KEY=ID)" % host)
-    if r["remaps"]:
+    # Agent files pin full ids that the remap does not rewrite: only worth a warning while some pinned id is not a remap target.
+    if r["remaps"] and not (ids and set(ids) <= set(str(v) for v in r["remaps"].values())):
         out.append("Model remaps are set (%s); agent files pin full model IDs, which the remap does not rewrite"
                    % ", ".join(sorted(r["remaps"])))
     o = r["remaps"].get("ANTHROPIC_DEFAULT_OPUS_MODEL")
@@ -525,7 +526,7 @@ def doctor(home, repo, env, *, online=False, which=shutil.which, run=_default_ru
         if h["ours"] and (h["script_exists"] is False or h["python_exists"] is False):
             what = "script %s" % h["script_path"] if h["script_exists"] is False else "interpreter %s" % h["python"]
             critical.append("hook %s: missing %s: %s" % (hook_script(h["command"]), what, CRITICAL_MSG))
-    for w in remap_warnings(settings, env, _config_models(repo)):
+    for w in remap_warnings(settings, env, _config_models(repo, home)):
         items.append(_item("remap", "warn", w))
     items.append(_item("suggested preset", "info", suggest_preset(settings, env)))
     items.append(_item("mode", "info", "%s (%s)" % (mode["mode"], mode["explain"])))
@@ -538,12 +539,16 @@ def _public_settings(settings):
     return dict(settings)
 
 
-def _config_models(repo):
-    try:
-        with open(Path(repo) / "config" / "agents.json", encoding="utf-8") as f:
-            return dict(json.load(f).get("models") or {})
-    except (OSError, ValueError):
-        return {}
+def _config_models(repo, home=None):
+    """Model ids of the routing config in use: the active ~/.claude/jev/agents.json when one is installed, else the shipped one."""
+    paths = ([Path(home) / ".claude" / "jev" / "agents.json"] if home else []) + [Path(repo) / "config" / "agents.json"]
+    for p in paths:
+        try:
+            with open(p, encoding="utf-8") as f:
+                return dict(json.load(f).get("models") or {})
+        except (OSError, ValueError):
+            continue
+    return {}
 
 
 def format_doctor(report):
