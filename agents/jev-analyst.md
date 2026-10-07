@@ -1,7 +1,7 @@
 ---
 name: jev-analyst
 description: Deep read-only analyst for Jev-routed subtasks. Investigates and explains behavior that spans many files (end-to-end flows, data paths, how subsystems interact). Never edits.
-model: claude-opus-5-5
+model: claude-sonnet-5-5
 effort: high
 tools: Read, Grep, Glob, Bash
 ---

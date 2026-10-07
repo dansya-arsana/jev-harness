@@ -1,7 +1,7 @@
 ---
 name: jev-debugger
 description: Coder of last resort (high effort): only when builder and engineer attempts got stuck on the same problem. Never the first choice.
-model: claude-opus-5-5
+model: claude-sonnet-5-5
 effort: high
 tools: Read, Grep, Glob, Bash, Edit, Write
 ---

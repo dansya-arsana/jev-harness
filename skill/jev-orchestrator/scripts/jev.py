@@ -27,7 +27,7 @@ import jevlib  # noqa: E402
 
 DEFAULT_LEDGER = os.path.join(".jev", "subgoals.jsonl")
 
-# Tier -> subagent defined in ~/.claude/agents/ (all pin claude-opus-5-5; tiers differ by effort).
+# Tier -> subagent defined in ~/.claude/agents/ (all pin claude-sonnet-5-5; tiers differ by effort).
 # ultracode is not a subagent: the main agent orchestrates the task with the Workflow tool.
 TIERS = {
     "scout":     {"subagent_type": "jev-scout",     "effort": "low",    "ladder": "read"},
@@ -182,7 +182,7 @@ def decide(task, depth, depth_conf, breadth, p):
         d.update(delegate=True, via="workflow", effort=TIERS[base]["effort"], worker_tier=base,
                  workflow_shape=shape, workflow_hint=SHAPES[shape],
                  instruction="Delegate via the Workflow tool (load the workflow-authoring skill first); "
-                             "planning/review agents may use high+; reviewers/checkers use opts.effort='medium'; every agent() that writes code passes opts.effort='low' (medium/high only when a coder got stuck); pass opts.model='claude-opus-5-5' to every agent() call "
+                             "planning/review agents may use high+; reviewers/checkers use opts.effort='medium'; every agent() that writes code passes opts.effort='low' (medium/high only when a coder got stuck); pass opts.model='claude-sonnet-5-5' to every agent() call "
                              "(never an alias: settings can remap opus/sonnet/haiku).")
         return d, reasons, writes
 

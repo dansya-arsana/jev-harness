@@ -1,7 +1,7 @@
 ---
 name: jev-scout
 description: Fast read-only scout for Jev-routed subtasks. Finds files, reads code, answers "where is X / what does Y import". Never edits.
-model: claude-opus-5-5
+model: claude-sonnet-5-5
 effort: low
 tools: Read, Grep, Glob, Bash
 ---

@@ -1,7 +1,7 @@
 ---
 name: jev-qa
 description: Browser QA reviewer (low effort): drives pages with jev-ultrafast via jevqa.py, then reviews the screenshots and checks. Read-only on the codebase.
-model: claude-opus-5-5
+model: claude-sonnet-5-5
 effort: low
 tools: Read, Grep, Glob, Bash
 ---

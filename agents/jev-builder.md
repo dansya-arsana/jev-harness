@@ -1,7 +1,7 @@
 ---
 name: jev-builder
 description: Default coder for Jev-routed work (low effort): small and ordinary edits, and implementing a planner's plan exactly.
-model: claude-opus-5-5
+model: claude-sonnet-5-5
 effort: low
 tools: Read, Grep, Glob, Bash, Edit, Write
 ---

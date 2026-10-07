@@ -1,7 +1,7 @@
 ---
 name: jev-advisor
 description: Deepest-reasoning read-only subagent for Jev-routed design questions that only need a recommendation (which library, which approach, trade-offs). Reads the code for context, never edits.
-model: claude-opus-5-5
+model: claude-sonnet-5-5
 effort: max
 tools: Read, Grep, Glob, Bash
 ---

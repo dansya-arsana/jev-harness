@@ -1,7 +1,7 @@
 ---
 name: jev-engineer
 description: Coder for substantial coordinated multi-file changes (medium effort). Used only when the work is bigger than a builder task, or when a builder got stuck.
-model: claude-opus-5-5
+model: claude-sonnet-5-5
 effort: medium
 tools: Read, Grep, Glob, Bash, Edit, Write
 ---
